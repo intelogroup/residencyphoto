@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored ML runtimes are copied byte-for-byte from pinned packages.
+    "public/ml/**",
   ]),
 ]);
 

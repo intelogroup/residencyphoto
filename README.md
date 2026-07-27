@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ResidencyPhoto
 
-## Getting Started
+ResidencyPhoto prepares residency application headshots to match published AAMC ERAS photo specifications. Image processing runs in the browser; Neon provides authentication and account data, and Stripe provides checkout.
 
-First, run the development server:
+## Local development
 
 ```bash
+npm install
+cp .env.example .env.local
+npm run db:migrate
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Before committing:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm test
+npm run lint
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Vercel deployment
 
-## Learn More
+Create a Vercel project named `residencyphoto`. If the Git repository root is the parent directory, set the Vercel Root Directory to `eras-photo`.
 
-To learn more about Next.js, take a look at the following resources:
+Configure these Production environment variables:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```text
+APP_URL=https://residencyphoto.com
+DATABASE_URL
+NEON_AUTH_BASE_URL
+NEXT_PUBLIC_NEON_AUTH_URL
+NEXT_PUBLIC_NEON_DATA_API_URL
+NEON_AUTH_COOKIE_SECRET
+STRIPE_SECRET_KEY
+STRIPE_RESIDENT_PRICE_ID
+STRIPE_PROGRAM_PRICE_ID
+STRIPE_WEBHOOK_SECRET
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Use test Neon/Stripe resources or appropriately isolated values for Preview deployments. Run database migrations deliberately against the target database before promoting a deployment.
 
-## Deploy on Vercel
+The production Stripe webhook endpoint is:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```text
+https://residencyphoto.com/api/webhooks/stripe
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+After the production deployment is verified, attach both `residencyphoto.com` and `www.residencyphoto.com` in Vercel and redirect `www` to the apex domain.
