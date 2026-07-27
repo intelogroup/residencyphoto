@@ -1,0 +1,47 @@
+{
+  "BackgroundEffect.tsx": {
+    "mtime": 1784041216.0951872,
+    "ast_hash": "68ac84c89272d65d7c05dda2dede4474",
+    "semantic_hash": ""
+  },
+  "Features.tsx": {
+    "mtime": 1784036920.4371068,
+    "ast_hash": "c93d915d325999afd1efef3406a6702b",
+    "semantic_hash": ""
+  },
+  "Footer.tsx": {
+    "mtime": 1784040480.754684,
+    "ast_hash": "f67b754530dc525c6af407308ee675d6",
+    "semantic_hash": ""
+  },
+  "Hero.tsx": {
+    "mtime": 1784040322.1628983,
+    "ast_hash": "d3f59a32f3dc5c20f19e466b1e78ec29",
+    "semantic_hash": ""
+  },
+  "HowItWorks.tsx": {
+    "mtime": 1784040329.0020456,
+    "ast_hash": "3c6921dc06054318296ce417eee711b3",
+    "semantic_hash": ""
+  },
+  "Nav.tsx": {
+    "mtime": 1784042137.0543535,
+    "ast_hash": "542f1e3e5f2732b41babdb3d138bd4b8",
+    "semantic_hash": ""
+  },
+  "Pricing.tsx": {
+    "mtime": 1784036932.37148,
+    "ast_hash": "b46850965d88d21c8b063782dddac14c",
+    "semantic_hash": ""
+  },
+  "Stats.tsx": {
+    "mtime": 1784036907.0781538,
+    "ast_hash": "694ced6d556c5c4646cb28be8fa3bd6b",
+    "semantic_hash": ""
+  },
+  "useOnScreen.ts": {
+    "mtime": 1784035445.2538233,
+    "ast_hash": "ce4577e5c4391b8c5e24ca9a626d07df",
+    "semantic_hash": ""
+  }
+}
