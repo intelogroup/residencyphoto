@@ -123,7 +123,7 @@ export default function DashboardPage() {
     { key: "editor", label: "Editor", icon: SlidersHorizontal },
     { key: "history", label: "Photos", icon: Images },
   ];
-  const isFreePlan = (user.plan ?? "Free") === "Free";
+  const isUnpaid = (user.plan ?? "Free") === "Free";
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#f6f8f7] pb-20 font-sans md:pb-0">
@@ -168,19 +168,21 @@ export default function DashboardPage() {
 
           {/* Account menu */}
           <div ref={avatarMenuRef} className="relative flex shrink-0 items-center gap-2">
-            {isFreePlan && (
+            {isUnpaid && (
               <Link
                 href="/checkout?plan=Resident"
                 className="hidden items-center gap-1.5 rounded-full bg-primary py-1.5 pl-2.5 pr-3 text-xs text-white shadow-sm transition-[background-color,box-shadow] duration-150 hover:bg-primary-dark hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 md:inline-flex"
               >
                 <ArrowUpCircle aria-hidden={true} className="h-3.5 w-3.5" />
-                <span className="font-semibold">Upgrade</span>
+                <span className="font-semibold">Unlock</span>
                 <span className="rounded-full bg-white/20 px-1 py-0.5 text-[10px] font-bold tabular-nums text-white ring-1 ring-white/30">$4</span>
               </Link>
             )}
-            <span className="hidden rounded-md border border-primary/15 bg-primary/5 px-2 py-1 text-[11px] font-semibold leading-none text-primary-dark sm:inline-flex">
-              {user.plan ?? "Free"}
-            </span>
+            {user.plan !== "Free" && user.plan && (
+              <span className="hidden rounded-md border border-primary/15 bg-primary/5 px-2 py-1 text-[11px] font-semibold leading-none text-primary-dark sm:inline-flex">
+                {user.plan}
+              </span>
+            )}
             <button
               type="button"
               onClick={() => setAvatarMenuOpen((open) => !open)}
@@ -236,7 +238,7 @@ export default function DashboardPage() {
         aria-label="Mobile dashboard navigation"
         className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-md md:hidden"
       >
-        <div className={`mx-auto grid max-w-md ${isFreePlan ? "grid-cols-4" : "grid-cols-3"}`}>
+        <div className="mx-auto grid max-w-md grid-cols-3">
           {TABS.map((tab) => (
             <button
               key={tab.key}
@@ -251,15 +253,6 @@ export default function DashboardPage() {
               {tab.label}
             </button>
           ))}
-          {isFreePlan && (
-            <Link
-              href="/checkout?plan=Resident"
-              className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-lg bg-primary px-2 text-[11px] font-semibold text-white transition-colors hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
-            >
-              <ArrowUpCircle aria-hidden={true} className="h-4 w-4" />
-              Upgrade · $4
-            </Link>
-          )}
         </div>
       </nav>
 

@@ -101,13 +101,13 @@ export function SettingsPanel({ user, initialPanel = null, onOpenSupport }: Sett
   };
 
   const isPaid = plan !== "Free";
-  const planPrice = plan === "Resident" ? "$4" : plan === "Program" ? "$19" : "$0";
+  const planPrice = plan === "Resident" ? "$4" : plan === "Program" ? "$19" : "—";
   const planFeatures =
     plan === "Program"
       ? ["Bulk photo processing", "Team access", "Priority support"]
       : plan === "Resident"
         ? ["Unlimited downloads", "No watermark", "Saved photo history"]
-        : ["Full editor access", "ERAS readiness checks", "Ready-file preview"];
+        : ["Unlimited downloads", "No watermark", "Saved photo history"];
 
   const closeBilling = () => {
     setBillingOpen(false);
@@ -216,14 +216,14 @@ export function SettingsPanel({ user, initialPanel = null, onOpenSupport }: Sett
               </div>
               <div className="mt-5 flex items-end justify-between gap-4">
                 <div>
-                  <p className="text-lg font-semibold text-heading">{plan} Plan</p>
-                  <p className="mt-0.5 text-xs text-muted">{isPaid ? "One-time purchase" : "Free access"}</p>
+                  <p className="text-lg font-semibold text-heading">{isPaid ? `${plan} Plan` : "Preview Access"}</p>
+                  <p className="mt-0.5 text-xs text-muted">{isPaid ? "One-time purchase" : "Upgrade to download — $4"}</p>
                 </div>
                 <p className="text-2xl font-semibold tabular-nums text-heading">{planPrice}</p>
               </div>
             </div>
             <dl className="divide-y divide-slate-100 px-5 text-sm">
-              <div className="flex justify-between gap-3 py-3.5"><dt className="text-muted">Downloads</dt><dd className="font-semibold text-heading">{isPaid ? "Unlimited" : "Upgrade required"}</dd></div>
+              <div className="flex justify-between gap-3 py-3.5"><dt className="text-muted">Downloads</dt><dd className="font-semibold text-heading">{isPaid ? "Unlimited" : "Available after $4 unlock"}</dd></div>
               <div className="flex justify-between gap-3 py-3.5"><dt className="text-muted">Next charge</dt><dd className="font-semibold text-heading">$0</dd></div>
             </dl>
             <div className="space-y-2 border-t border-slate-100 p-4">
@@ -310,16 +310,16 @@ export function SettingsPanel({ user, initialPanel = null, onOpenSupport }: Sett
               <div className="flex items-start justify-between gap-4 p-5">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 id="current-plan-heading" className="text-lg font-semibold text-heading">{plan} Plan</h3>
-                    <span className="pill-success">Active</span>
+                    <h3 id="current-plan-heading" className="text-lg font-semibold text-heading">{isPaid ? `${plan} Plan` : "Preview Access"}</h3>
+                    <span className="pill-success">{isPaid ? "Active" : "Preview"}</span>
                   </div>
                   <p className="mt-1 text-sm text-body">
-                    {isPaid ? "One-time purchase with no recurring subscription." : "Full editing and preview access. Download requires an upgrade."}
+                    {isPaid ? "One-time purchase with no recurring subscription." : "Editing and preview included. $4 unlocks unlimited downloads."}
                   </p>
                 </div>
                 <div className="shrink-0 text-right">
                   <p className="text-2xl font-semibold tabular-nums text-heading">{planPrice}</p>
-                  <p className="mt-0.5 text-xs text-muted">{isPaid ? "paid once" : "no charge"}</p>
+                  <p className="mt-0.5 text-xs text-muted">{isPaid ? "paid once" : "$4 to unlock"}</p>
                 </div>
               </div>
 
@@ -340,7 +340,7 @@ export function SettingsPanel({ user, initialPanel = null, onOpenSupport }: Sett
               <dl className="mt-2 divide-y divide-slate-100 rounded-xl border border-slate-200 px-4 text-sm">
                 <div className="flex justify-between gap-4 py-3.5">
                   <dt className="text-muted">Billing type</dt>
-                  <dd className="text-right font-medium text-heading">{isPaid ? "One-time purchase" : "Free access"}</dd>
+                  <dd className="text-right font-medium text-heading">{isPaid ? "One-time purchase" : "No purchase yet"}</dd>
                 </div>
                 <div className="flex justify-between gap-4 py-3.5">
                   <dt className="text-muted">Next charge</dt>

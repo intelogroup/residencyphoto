@@ -24,7 +24,7 @@ export function Footer() {
               <a href="#features" className="hover:text-primary transition-colors">Features</a>
               <a href="#how-it-works" className="hover:text-primary transition-colors">How It Works</a>
               <a href="#pricing" className="hover:text-primary transition-colors">Pricing</a>
-              <a href="/login" className="hover:text-primary transition-colors">Try the tool</a>
+              <a href="/login" className="hover:text-primary transition-colors">Open editor</a>
             </div>
           </div>
 

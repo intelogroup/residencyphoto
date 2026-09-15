@@ -1,16 +1,6 @@
 "use client";
 
-import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  CreditCard,
-  Download,
-  ImageIcon,
-  LockKeyhole,
-  RefreshCw,
-  ShieldCheck,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, LockKeyhole, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -20,35 +10,20 @@ import { authClient } from "@/lib/auth/client";
 const PLAN_DETAILS: Record<
   StripePlanName,
   {
-    eyebrow: string;
     heading: string;
     description: string;
     features: string[];
   }
 > = {
   Resident: {
-    eyebrow: "One-Time Fee",
     heading: "Fix your photo and download unlimited versions.",
-    description:
-      "Pay once to edit, check, and download your ERAS-ready photo whenever you need it.",
-    features: [
-      "Unlimited high-quality downloads",
-      "No watermark on exported photos",
-      "Automatic ERAS compliance checks",
-      "Saved photo history across sessions",
-    ],
+    description: "Pay once — edit, check, and download your ERAS-ready photo.",
+    features: ["Unlimited downloads, no watermark", "Automatic ERAS checks", "Saved photo history"],
   },
   Program: {
-    eyebrow: "For Residency Programs",
-    heading: "A practical workflow for processing applicant photos at scale.",
-    description:
-      "Give your team a consistent way to prepare photos without repeating manual crop and export work.",
-    features: [
-      "Bulk photo processing workflow",
-      "Shared access for program teams",
-      "Consistent ERAS-ready exports",
-      "Priority support when you need it",
-    ],
+    heading: "Process applicant photos at scale.",
+    description: "Consistent ERAS exports for your whole cohort.",
+    features: ["Bulk processing", "Shared access", "Priority support"],
   },
 };
 
@@ -101,12 +76,9 @@ function CheckoutContent() {
       <CheckoutShell>
         <div className="mx-auto max-w-lg py-16 text-center sm:py-24">
           <span className="tag">Plan Not Found</span>
-          <h1 className="mt-5 text-3xl font-bold text-heading text-balance">
-            Choose a plan to continue
-          </h1>
+          <h1 className="mt-5 text-3xl font-bold text-heading text-balance">Choose a plan to continue</h1>
           <p className="mt-3 leading-relaxed text-body">
-            That plan is not available. Review the current options and choose the one that fits
-            your workflow.
+            That plan is not available. Review the current options and choose the one that fits your workflow.
           </p>
           <Link href="/#pricing" className="btn-primary mt-7">
             View Plans
@@ -122,45 +94,27 @@ function CheckoutContent() {
 
   return (
     <CheckoutShell>
-      <div className="grid overflow-hidden rounded-xl border border-border bg-white shadow-[0_24px_70px_rgba(15,23,42,0.08)] lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="grid overflow-hidden rounded-xl border border-border bg-white shadow-sm lg:grid-cols-[1.05fr_0.95fr]">
         <section className="p-6 sm:p-9 lg:p-10" aria-labelledby="plan-heading">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary-dark">
-            {details.eyebrow}
-          </p>
           <h1
             id="plan-heading"
-            className="mt-3 max-w-xl text-3xl font-bold leading-tight text-heading text-balance sm:text-4xl"
+            className="max-w-xl text-3xl font-bold leading-tight tracking-tight text-heading text-balance sm:text-[1.9rem]"
           >
             {details.heading}
           </h1>
-          <p className="mt-4 max-w-xl text-sm leading-7 text-body sm:text-base">
-            {details.description}
-          </p>
+          <p className="mt-3 max-w-xl text-sm leading-7 text-body">{details.description}</p>
 
-          <ul className="mt-8 grid gap-4 sm:grid-cols-2" aria-label={`${selectedPlan.name} plan benefits`}>
+          <ul className="mt-7 flex flex-wrap gap-2" aria-label={`${selectedPlan.name} plan benefits`}>
             {details.features.map((feature) => (
-              <li key={feature} className="flex items-start gap-3 text-sm leading-6 text-heading">
-                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary-dark">
-                  <Check aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={2.5} />
-                </span>
-                <span>{feature}</span>
+              <li
+                key={feature}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-subtle px-3 py-1 text-xs font-medium text-heading"
+              >
+                <Check aria-hidden={true} className="h-3 w-3 text-primary" strokeWidth={2.5} />
+                {feature}
               </li>
             ))}
           </ul>
-
-          <div className="mt-10 grid grid-cols-3 gap-3 border-t border-border pt-7">
-            {[
-              [LockKeyhole, "Private", "Photos stay local"],
-              [ImageIcon, "ERAS-ready", "375 × 525 export"],
-              [RefreshCw, "One-time", "No subscription"],
-            ].map(([Icon, label, detail]) => (
-              <div key={label as string} className="min-w-0">
-                <Icon aria-hidden="true" className="h-4 w-4 text-primary-dark" />
-                <p className="mt-2 text-xs font-semibold text-heading sm:text-sm">{label as string}</p>
-                <p className="mt-0.5 text-[11px] leading-4 text-muted sm:text-xs">{detail as string}</p>
-              </div>
-            ))}
-          </div>
         </section>
 
         <aside className="border-t border-border bg-surface-subtle p-6 sm:p-10 lg:border-l lg:border-t-0 lg:p-12" aria-label="Order summary">
@@ -174,20 +128,11 @@ function CheckoutContent() {
               <p className="shrink-0 text-lg font-bold text-heading tabular-nums">{price}</p>
             </div>
 
-            <dl className="mt-6 space-y-3 border-t border-border pt-5 text-sm">
-              <div className="flex justify-between gap-4">
-                <dt className="text-body">Billing</dt>
-                <dd className="font-medium text-heading">One-time</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt className="text-body">Recurring charge</dt>
-                <dd className="font-medium text-heading">$0</dd>
-              </div>
-              <div className="flex items-end justify-between gap-4 border-t border-border pt-4">
-                <dt className="font-semibold text-heading">Total Due Today</dt>
-                <dd className="text-2xl font-bold text-heading tabular-nums">{price}</dd>
-              </div>
-            </dl>
+            <div className="mt-5 flex items-end justify-between gap-4 border-t border-border pt-4">
+              <span className="text-sm font-semibold text-heading">Total due today</span>
+              <span className="text-2xl font-bold text-heading tabular-nums">{price}</span>
+            </div>
+            <p className="mt-1 text-right text-xs text-muted">One-time · no subscription</p>
           </div>
 
           {session.isPending ? (
@@ -201,7 +146,7 @@ function CheckoutContent() {
             <>
               <div className="mt-6 flex items-center gap-3 rounded-lg border border-border bg-white p-4">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                  <ShieldCheck aria-hidden="true" className="h-4 w-4 text-primary-dark" />
+                  <ShieldCheck aria-hidden={true} className="h-4 w-4 text-primary-dark" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs text-muted">Purchasing as</p>
@@ -210,42 +155,27 @@ function CheckoutContent() {
               </div>
 
               {error && (
-                <p
-                  role="alert"
-                  aria-live="polite"
-                  className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-700"
-                >
+                <p role="alert" aria-live="polite" className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-700">
                   {error}
                 </p>
               )}
 
-              <button
-                type="button"
-                onClick={startCheckout}
-                className="btn-primary mt-5 min-h-12 w-full"
-                disabled={loading}
-              >
+              <button type="button" onClick={startCheckout} className="btn-primary mt-5 min-h-12 w-full" disabled={loading}>
                 {loading ? (
                   "Opening Secure Checkout…"
                 ) : (
                   <>
                     Continue to Payment
-                    <ArrowRight aria-hidden="true" className="ml-2 h-4 w-4" />
+                    <ArrowRight aria-hidden={true} className="ml-2 h-4 w-4" />
                   </>
                 )}
               </button>
-              <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs leading-5 text-muted">
-                <CreditCard aria-hidden="true" className="h-3.5 w-3.5" />
-                Payment details are entered securely on Stripe.
-              </p>
             </>
           ) : (
             <div className="mt-6 rounded-xl border border-border bg-white p-5">
-              <h2 className="font-semibold text-heading">Sign in before purchasing</h2>
-              <p className="mt-2 text-sm leading-6 text-body">
-                Your plan is connected to your account so it remains available when you return.
-              </p>
-              <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+              <h2 className="font-semibold text-heading">Sign in to purchase</h2>
+              <p className="mt-2 text-sm leading-6 text-body">Your purchase stays on your account.</p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 <Link href="/auth/sign-in" className="btn-primary">
                   Sign In
                 </Link>
@@ -256,13 +186,10 @@ function CheckoutContent() {
             </div>
           )}
 
-          <div className="mt-7 flex items-start gap-3 text-xs leading-5 text-muted">
-            <Download aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-primary-dark" />
-            <p>
-              Access activates after Stripe confirms payment. You can return to your dashboard
-              immediately afterward.
-            </p>
-          </div>
+          <p className="mt-6 flex items-center justify-center gap-1.5 text-center text-xs leading-5 text-muted">
+            <LockKeyhole aria-hidden={true} className="h-3.5 w-3.5" />
+            Secure payment on Stripe
+          </p>
         </aside>
       </div>
     </CheckoutShell>
@@ -311,11 +238,8 @@ function CheckoutShell({ children }: { children: React.ReactNode }) {
             </svg>
             <span>ResidencyPhoto</span>
           </Link>
-          <Link
-            href="/#pricing"
-            className="inline-flex items-center text-sm font-medium text-body hover:text-heading"
-          >
-            <ArrowLeft aria-hidden="true" className="mr-2 h-4 w-4" />
+          <Link href="/#pricing" className="inline-flex items-center text-sm font-medium text-body hover:text-heading">
+            <ArrowLeft aria-hidden={true} className="mr-2 h-4 w-4" />
             Back to Plans
           </Link>
         </div>
@@ -324,8 +248,12 @@ function CheckoutShell({ children }: { children: React.ReactNode }) {
       <footer className="mx-auto flex max-w-6xl flex-col gap-3 px-5 pb-8 text-xs text-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
         <p>© {new Date().getFullYear()} ResidencyPhoto</p>
         <nav aria-label="Legal" className="flex gap-5">
-          <Link href="/privacy" className="hover:text-heading">Privacy</Link>
-          <Link href="/terms" className="hover:text-heading">Terms</Link>
+          <Link href="/privacy" className="hover:text-heading">
+            Privacy
+          </Link>
+          <Link href="/terms" className="hover:text-heading">
+            Terms
+          </Link>
         </nav>
       </footer>
     </main>

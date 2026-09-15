@@ -27,6 +27,7 @@ export function OverviewPanel({ user, onStartEditor, onOpenPhoto }: OverviewProp
   const [history] = useState(() => (typeof window === "undefined" ? [] : getHistory()));
   const overview = buildDashboardOverview(history, new Date());
   const currentPlan = user.plan ?? "Free";
+  const isUnpaid = currentPlan === "Free";
 
   return (
     <div className="space-y-5 animate-fade-in-up font-sans">
@@ -94,7 +95,7 @@ export function OverviewPanel({ user, onStartEditor, onOpenPhoto }: OverviewProp
       </section>
 
       <section aria-label="Dashboard status" className="grid overflow-hidden rounded-xl border border-slate-200 bg-white sm:grid-cols-2 lg:grid-cols-4">
-        <StatusItem label="Plan" value={`${currentPlan} plan`} icon={CircleCheck} />
+        <StatusItem label="Access" value={isUnpaid ? "Preview — $4 to download" : `${currentPlan} · unlimited`} icon={isUnpaid ? LockKeyhole : CircleCheck} />
         <StatusItem label="Saved locally" value={`${overview.photoCount} ${overview.photoCount === 1 ? "photo" : "photos"}`} icon={ImagePlus} />
         <StatusItem label="Processing" value="On your device" icon={LockKeyhole} />
         <StatusItem label="Program review" value={overview.reviewDateLabel} icon={CalendarDays} />
@@ -104,13 +105,13 @@ export function OverviewPanel({ user, onStartEditor, onOpenPhoto }: OverviewProp
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-base font-semibold text-heading">Your progress</h2>
-            <p className="mt-1 text-xs text-muted">{currentPlan === "Free" ? "Upload, adjust, and preview free. Upgrade to download." : "Upload, adjust, and download in one workflow."}</p>
+            <p className="mt-1 text-xs text-muted">Upload, adjust, and download — one workflow.</p>
           </div>
           <div className="relative grid gap-3 sm:grid-cols-3 sm:gap-7">
             <div aria-hidden="true" className="absolute left-4 right-4 top-3.5 hidden h-px bg-slate-200 sm:block" />
             <WorkflowStep index={1} title="Upload" complete={overview.hasPhotos} active={!overview.hasPhotos} />
             <WorkflowStep index={2} title="Adjust" complete={overview.hasPhotos} active={false} />
-            <WorkflowStep index={3} title={currentPlan === "Free" ? "Unlock Download" : "Download"} complete={currentPlan !== "Free" && overview.hasPhotos} active={false} />
+            <WorkflowStep index={3} title="Download" complete={!isUnpaid && overview.hasPhotos} active={false} />
           </div>
         </div>
       </section>

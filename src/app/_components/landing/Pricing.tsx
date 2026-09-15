@@ -1,13 +1,5 @@
 const PLANS = [
   {
-    name: "Free",
-    price: "$0",
-    blurb: "Prepare and preview your ERAS photo.",
-    features: ["Full photo editor", "Automatic ERAS checks", "Ready-file preview", "Download requires upgrade"],
-    highlight: false,
-    cta: "Try the Editor",
-  },
-  {
     name: "Resident",
     price: "$4",
     blurb: "For applicants submitting to ERAS.",
@@ -33,24 +25,23 @@ const PLANS = [
 export function Pricing() {
   return (
     <section id="pricing" className="max-w-6xl mx-auto px-6 py-20 md:py-28">
-      <div className="text-center max-w-xl mx-auto mb-16 space-y-3">
-        <span className="tag">Pricing</span>
-        <h2 className="font-sans text-4xl font-bold text-heading">
+      <div className="text-center max-w-xl mx-auto mb-14 space-y-3">
+        <h2 className="font-sans text-3xl font-bold tracking-tight text-heading text-balance">
           Simple, one-time pricing
         </h2>
-        <p className="font-sans text-sm text-muted">
+        <p className="font-sans text-sm leading-6 text-muted">
           No subscriptions. Pay once, download whenever you need to.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-8 items-stretch">
+      <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2 items-stretch">
         {PLANS.map((plan) => (
           <div
             key={plan.name}
-            className={`flex flex-col relative p-6 rounded-lg bg-surface ${
+            className={`flex flex-col relative p-6 rounded-xl bg-white ${
               plan.highlight
-                ? "border-2 border-primary shadow-lg"
-                : "border border-border"
+                ? "border border-primary shadow-sm"
+                : "border border-border shadow-sm"
             }`}
           >
             {plan.highlight && (
@@ -62,12 +53,15 @@ export function Pricing() {
             )}
 
             <div className="mb-4">
-              <h3 className="font-sans text-xl font-bold text-heading">{plan.name}</h3>
-              <p className="font-sans text-sm text-muted mt-1">{plan.blurb}</p>
+              <h3 className="font-sans text-xl font-bold tracking-tight text-heading">{plan.name}</h3>
+              <p className="font-sans text-sm leading-5 text-muted mt-1">{plan.blurb}</p>
+              {plan.name === "Program" && (
+                <p className="mt-1 text-xs font-medium text-primary-dark">For teams · shared access</p>
+              )}
             </div>
 
-            <div className="flex items-baseline gap-1 py-4">
-              <span className="font-sans text-4xl font-bold text-heading">{plan.price}</span>
+            <div className="flex items-baseline gap-1.5 py-4">
+              <span className="font-sans text-4xl font-bold tracking-tight text-heading">{plan.price}</span>
               <span className="font-sans text-sm text-muted">one-time</span>
             </div>
 
@@ -81,7 +75,7 @@ export function Pricing() {
             </ul>
 
             <a
-              href={plan.name === "Free" ? "/auth/sign-in" : `/checkout?plan=${plan.name}`}
+              href={`/checkout?plan=${plan.name}`}
               className={`w-full text-center block mt-6 ${
                 plan.highlight ? "btn-primary" : "btn-ghost"
               }`}

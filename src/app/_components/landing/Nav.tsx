@@ -35,7 +35,7 @@ export function Nav() {
             href={isLoggedIn ? "/dashboard" : "/auth/sign-up"}
             className="inline-flex items-center justify-center bg-primary text-white hover:bg-primary-dark transition-colors duration-200 text-xs font-semibold px-6 py-2.5 rounded-full cursor-pointer"
           >
-            {isLoggedIn ? "Dashboard" : "Try Free"}
+            {isLoggedIn ? "Dashboard" : "Get Started"}
           </a>
         </div>
       </div>
