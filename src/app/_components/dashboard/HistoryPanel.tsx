@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import React, { useState } from "react";
 import { getHistory, clearHistory, removeHistoryRecord, type HistoryRecord } from "@/lib/eras-storage";
 import { isPhotoHistoryEnabled } from "@/lib/privacy-settings";
@@ -82,12 +83,12 @@ export function HistoryPanel({ onOpenPhoto }: HistoryPanelProps) {
 
             {/* Thumbnail Box */}
             <div className="aspect-[5/7] w-full overflow-hidden bg-slate-100 border border-slate-100">
-              <img
+              <Image
                 src={item.thumbnail}
                 alt={item.name}
                 width={375}
                 height={525}
-                loading="lazy"
+                unoptimized
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
             </div>

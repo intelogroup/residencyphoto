@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 
 const STEPS_DATA = [
@@ -97,12 +98,11 @@ export function HowItWorks() {
               <div className="flex items-center gap-6 animate-fade-in-up">
                 <div className="relative rounded-xl bg-slate-50 w-28 aspect-[2.5/3.5] overflow-hidden shrink-0">
                   <div className="absolute inset-2 border-2 border-dashed border-primary/60 rounded-full" />
-                  <img
+                  <Image
                     src="/professional_headshot.jpg"
                     alt="Centered crop guide"
                     width={112}
                     height={157}
-                    loading="lazy"
                     className="w-full h-full object-cover opacity-70"
                   />
                 </div>
