@@ -26,6 +26,12 @@ export const photoRecords = pgTable(
   (table) => [index("photo_records_user_created_idx").on(table.userId, table.createdAt)],
 );
 
+export const rateLimits = pgTable("rate_limits", {
+  key: text("key").primaryKey(),
+  windowStart: timestamp("window_start", { withTimezone: true }).notNull().defaultNow(),
+  count: integer("count").notNull().default(1),
+});
+
 export type ApplicantProfile = typeof applicantProfiles.$inferSelect;
 export type NewApplicantProfile = typeof applicantProfiles.$inferInsert;
 export type PhotoRecord = typeof photoRecords.$inferSelect;
