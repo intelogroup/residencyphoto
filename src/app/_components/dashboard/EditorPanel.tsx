@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Crop, SlidersHorizontal } from "lucide-react";
+import { Crop, Eye, EyeOff, RotateCcw, SlidersHorizontal, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   computeResolutionWarning,
@@ -71,6 +71,7 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
   // Canvas ref
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
+  const uploadInputRef = useRef<HTMLInputElement | null>(null);
 
   // Drag states
   const [isDragging, setIsDragging] = useState(false);
@@ -91,6 +92,8 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
     const file = e.target.files?.[0];
     if (!file) return;
     loadImage(file);
+    // Allow re-selecting the same file after Upload New
+    e.target.value = "";
   };
 
   // Shared core: loads any image URL (an uploaded file's object URL, or a
@@ -550,20 +553,48 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
                     : "Click and drag the photo to reposition it"}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  ref={uploadInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/heic,image/heif"
+                  className="sr-only"
+                  tabIndex={-1}
+                  onChange={handleFileChange}
+                  aria-hidden="true"
+                />
                 <button
                   type="button"
-                  onClick={() => setShowGuide(!showGuide)}
-                  aria-pressed={showGuide}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1 transition-colors duration-150 cursor-pointer ${
-                    showGuide
-                      ? "bg-primary/15 text-primary border border-primary/20"
-                      : "bg-slate-100 text-slate-500 border border-slate-200"
-                  }`}
+                  onClick={() => uploadInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-heading px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 active:scale-[0.97]"
                 >
-                  {showGuide ? "Guide On" : "Guide Off"}
+                  <Upload aria-hidden={true} className="h-3.5 w-3.5" />
+                  Upload New
                 </button>
-                <button type="button" onClick={handleResetCrop} className="btn-ghost px-3 py-1.5 text-xs">Reset Crop</button>
+                <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowGuide(!showGuide)}
+                    aria-pressed={showGuide}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition ${
+                      showGuide
+                        ? "bg-white text-heading shadow-sm border border-slate-200"
+                        : "text-slate-500 hover:text-heading"
+                    }`}
+                  >
+                    {showGuide ? <Eye aria-hidden={true} className="h-3.5 w-3.5" /> : <EyeOff aria-hidden={true} className="h-3.5 w-3.5" />}
+                    {showGuide ? "Guide On" : "Guide Off"}
+                  </button>
+                  <span aria-hidden="true" className="h-4 w-px bg-slate-200" />
+                  <button
+                    type="button"
+                    onClick={handleResetCrop}
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-slate-500 transition hover:text-heading"
+                  >
+                    <RotateCcw aria-hidden={true} className="h-3.5 w-3.5" />
+                    Reset Crop
+                  </button>
+                </div>
               </div>
             </div>
 
