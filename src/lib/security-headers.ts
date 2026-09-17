@@ -13,7 +13,7 @@ export function buildContentSecurityPolicy(environment = process.env.NODE_ENV) {
     "font-src 'self'",
     "img-src 'self' data: blob:",
     "media-src 'self' blob:",
-    "connect-src 'self' https://vercel.live wss://ws-us3.pusher.com blob: data:",
+    "connect-src 'self' https://vercel.live wss://ws-us3.pusher.com https://o4508808579514368.ingest.us.sentry.io blob: data:",
     "worker-src 'self' blob:",
     "manifest-src 'self'",
     "upgrade-insecure-requests",
