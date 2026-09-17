@@ -30,6 +30,9 @@ const nextConfig: NextConfig = {
 export default withSentryConfig(nextConfig, {
   org: "intelogroup",
   project: "residencyphoto",
+  // Route Sentry envelopes through a first-party path so ad/tracker
+  // blockers can't strip error reports (same idea as the /ingest proxy).
+  tunnelRoute: "/monitoring",
   // Sourcemap upload runs only when SENTRY_AUTH_TOKEN is set (Vercel env);
   // without it the build still succeeds.
   silent: !process.env.CI,
