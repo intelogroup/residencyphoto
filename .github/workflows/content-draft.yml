@@ -1,0 +1,71 @@
+name: Weekly content draft
+
+# Every Monday 13:00 UTC: draft a blog post + social snippets from content/topics.md,
+# commit to a content/<slug>-<date> branch, and open a review PR.
+
+on:
+  schedule:
+    - cron: "0 13 * * 1"
+  workflow_dispatch:
+    inputs:
+      base:
+        description: "Base branch for the draft PR (use the feature branch when testing)"
+        required: false
+        default: "main"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Generate draft post and snippets
+        id: draft
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_MODEL: ${{ vars.HF_MODEL }}
+        run: node scripts/content-draft.mjs
+
+      - name: Commit and open PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLUG: ${{ steps.draft.outputs.slug }}
+          DATE: ${{ steps.draft.outputs.date }}
+        run: |
+          set -euo pipefail
+          BRANCH="content/${SLUG}-${DATE}"
+          git config user.name "residencyphoto-bot"
+          git config user.email "bot@residencyphoto.com"
+          git checkout -b "$BRANCH"
+          git add content/posts "content/snippets" content/topics.md
+          git commit -m "Draft: ${SLUG}"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --base "${{ inputs.base || 'main' }}" \
+            --head "$BRANCH" \
+            --title "Content draft: ${SLUG}" \
+            --body "## Weekly content draft
+
+Topic: \`${SLUG}\` (tick marked as used in \`content/topics.md\`)
+
+Files:
+- \`content/posts/${SLUG}.mdx\` — full post with frontmatter
+- \`content/snippets/${SLUG}-${DATE}.md\` — 3 Threads drafts + Instagram caption + hashtags
+
+## Review checklist
+- [ ] Title is SEO-friendly (<60 chars) and description <155 chars
+- [ ] Article is factually accurate (ERAS specs: 2.5 x 3.5 in, 150 DPI, JPEG under 150 KB)
+- [ ] No placeholder text, no hallucinated claims
+- [ ] Frontmatter has title, description, date, slug
+- [ ] Post renders: \`npm run build\` passes after merge
+- [ ] Snippets are ready for manual posting to Threads / Instagram
+
+Merge to publish — /blog, sitemap, and RSS pick the post up automatically."

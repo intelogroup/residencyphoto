@@ -1,0 +1,35 @@
+name: Newsletter broadcast
+
+# Manually triggered: sends the latest (or chosen) blog post to all active
+# newsletter subscribers via Resend batch. Run AFTER merging the post.
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Blog post slug to broadcast (e.g. eras-photo-requirements-2026)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  broadcast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Send broadcast
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          APP_URL: https://residencyphoto.com
+          POST_SLUG: ${{ inputs.slug }}
+        run: node scripts/broadcast.mjs

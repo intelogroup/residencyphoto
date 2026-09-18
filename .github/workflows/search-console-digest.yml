@@ -1,0 +1,24 @@
+name: Search Console digest
+
+# Weekly digest of Search Console performance for /blog. v0 is an intentional
+# stub: it exits 0 with setup instructions until GOOGLE_SERVICE_ACCOUNT_JSON
+# is configured (see docs/marketing.md).
+
+on:
+  schedule:
+    - cron: "0 9 * * 1" # Mondays 09:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Search Console digest
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/search-console-digest.mjs

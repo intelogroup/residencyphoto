@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { NewsletterForm } from "./NewsletterForm";
+
 export function Footer() {
   return (
     <footer className="hairline-t bg-slate-50">
@@ -15,6 +18,9 @@ export function Footer() {
               A simple tool to resize and format your headshot for ERAS — no design skills needed.
             </p>
             <span className="pill-success">Your photo never leaves your device</span>
+            <div className="pt-2">
+              <NewsletterForm />
+            </div>
           </div>
 
           {/* Quick Links */}
@@ -24,6 +30,7 @@ export function Footer() {
               <a href="#features" className="hover:text-primary transition-colors">Features</a>
               <a href="#how-it-works" className="hover:text-primary transition-colors">How It Works</a>
               <a href="#pricing" className="hover:text-primary transition-colors">Pricing</a>
+              <Link href="/blog" className="hover:text-primary transition-colors">Blog</Link>
               <a href="/login" className="hover:text-primary transition-colors">Open editor</a>
             </div>
           </div>

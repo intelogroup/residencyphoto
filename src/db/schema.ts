@@ -32,6 +32,13 @@ export const rateLimits = pgTable("rate_limits", {
   count: integer("count").notNull().default(1),
 });
 
+export const newsletterSubscribers = pgTable("newsletter_subscribers", {
+  email: text("email").primaryKey(),
+  source: text("source").notNull().default("footer"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  unsubscribedAt: timestamp("unsubscribed_at", { withTimezone: true }),
+});
+
 export type ApplicantProfile = typeof applicantProfiles.$inferSelect;
 export type NewApplicantProfile = typeof applicantProfiles.$inferInsert;
 export type PhotoRecord = typeof photoRecords.$inferSelect;
