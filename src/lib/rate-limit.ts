@@ -52,3 +52,7 @@ export async function checkAuthRateLimit(key: string) {
 export async function checkSupportRateLimit(key: string) {
   return checkRateLimit("ratelimit:support", key, 5, 600);
 }
+
+export async function checkNewsletterRateLimit(key: string) {
+  return checkRateLimit("ratelimit:newsletter", key, 10, 600);
+}
