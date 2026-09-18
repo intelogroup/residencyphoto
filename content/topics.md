@@ -4,7 +4,7 @@ Weekly draft workflow (`.github/workflows/content-draft.yml`) picks the first
 unchecked topic, writes a full post + social snippets, and opens a PR.
 Check off a topic once its PR is merged — or when you decide not to run it.
 
-- [ ] ERAS photo size in pixels: exact dimensions and DPI explained
+- [x] ERAS photo size in pixels: exact dimensions and DPI explained
 - [ ] What background should an ERAS photo have? Rules and examples
 - [ ] Common ERAS photo rejection reasons (and how to avoid them)
 - [ ] What to wear for your residency headshot: outfit guide
