@@ -16,7 +16,7 @@ export function Features() {
         <div className="mx-auto max-w-2xl text-center">
           <span className="tag">What We Check</span>
           <h2 className="mt-4 text-balance font-sans text-3xl font-bold leading-tight text-heading md:text-4xl">
-            Every ERAS Photo Requirement, Checked Automatically
+            Every ERAS photo requirement, checked automatically
           </h2>
         </div>
 

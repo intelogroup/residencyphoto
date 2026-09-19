@@ -18,7 +18,7 @@ const PLANS = [
     blurb: "For programs processing many candidates.",
     features: ["Bulk processing", "Team access", "Priority support"],
     highlight: false,
-    cta: "Contact sales",
+    cta: "Get Program",
   },
 ];
 
