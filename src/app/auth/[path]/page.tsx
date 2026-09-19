@@ -1,8 +1,13 @@
 import { AuthView } from "@neondatabase/auth-ui";
 import { authViewPaths } from "@neondatabase/auth-ui/server";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 export const dynamicParams = false;
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: true },
+};
 
 export function generateStaticParams() {
   return Object.values(authViewPaths).map((path) => ({ path }));

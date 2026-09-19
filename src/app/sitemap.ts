@@ -3,7 +3,7 @@ import { getAllPosts } from "@/lib/blog";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = (process.env.APP_URL ?? "https://residencyphoto.com").replace(/\/$/, "");
-  const staticPaths = ["/", "/blog", "/checkout", "/privacy", "/terms", "/login", "/signup"];
+  const staticPaths = ["/", "/blog", "/privacy", "/terms"];
   const staticEntries: MetadataRoute.Sitemap = staticPaths.map((path) => ({
     url: `${base}${path}`,
     lastModified: new Date(),
