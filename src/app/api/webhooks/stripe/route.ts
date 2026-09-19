@@ -1,6 +1,7 @@
 import Stripe from "stripe";
 import { activateApplicantPlan } from "@/db/applicant-profiles";
 import { applyStripeEvent } from "@/lib/stripe-webhook";
+import { captureServerEvent } from "@/lib/analytics-server";
 
 export const runtime = "nodejs";
 
@@ -30,7 +31,22 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await applyStripeEvent(event, { activatePlan: activateApplicantPlan });
+    const result = await applyStripeEvent(event, {
+      activatePlan: activateApplicantPlan,
+      onPurchase: (purchase) =>
+        captureServerEvent({
+          event: "purchase",
+          distinctId: purchase.userId,
+          properties: {
+            plan: purchase.plan,
+            value: purchase.amountCents / 100,
+            amount_cents: purchase.amountCents,
+            currency: purchase.currency.toUpperCase(),
+            stripe_customer_id: purchase.customerId,
+            stripe_event_id: purchase.stripeEventId,
+          },
+        }),
+    });
     return Response.json({ received: true, result });
   } catch (error) {
     console.error("Unable to persist Stripe webhook event", error);

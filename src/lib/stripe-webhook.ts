@@ -16,8 +16,24 @@ interface CheckoutSessionLike {
   metadata: Record<string, string> | null;
 }
 
+export interface PurchaseInfo {
+  userId: string;
+  plan: StripePlanName;
+  /** Amount in the currency's minor unit (cents for USD). */
+  amountCents: number;
+  currency: string;
+  customerId: string;
+  stripeEventId: string;
+}
+
 interface WebhookDependencies {
   activatePlan: (userId: string, plan: StripePlanName, customerId: string) => Promise<void>;
+  /**
+   * Optional hook fired after a purchase is processed (plan activated).
+   * Used for conversion tracking. Failures are swallowed so analytics
+   * can never break webhook processing.
+   */
+  onPurchase?: (purchase: PurchaseInfo) => Promise<void> | void;
 }
 
 function isCheckoutSession(value: unknown): value is CheckoutSessionLike {
@@ -56,5 +72,21 @@ export async function applyStripeEvent(
   }
 
   await dependencies.activatePlan(userId, plan.name, customerId);
+
+  if (dependencies.onPurchase) {
+    try {
+      await dependencies.onPurchase({
+        userId,
+        plan: plan.name,
+        amountCents: plan.amount,
+        currency: plan.currency,
+        customerId,
+        stripeEventId: event.id,
+      });
+    } catch (error) {
+      console.error("Purchase tracking hook failed (webhook still processed)", error);
+    }
+  }
+
   return "processed";
 }

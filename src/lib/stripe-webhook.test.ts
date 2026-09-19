@@ -74,4 +74,93 @@ describe("applyStripeEvent", () => {
 
     expect(profile).toEqual({ plan: "Program", customerId: "cus_123" });
   });
+
+  it("notifies onPurchase with purchase details when a purchase is processed", async () => {
+    const activatePlan = vi.fn().mockResolvedValue(undefined);
+    const onPurchase = vi.fn().mockResolvedValue(undefined);
+
+    const result = await applyStripeEvent(
+      {
+        id: "evt_purchase",
+        type: "checkout.session.completed",
+        data: {
+          object: {
+            object: "checkout.session",
+            client_reference_id: "user_123",
+            customer: "cus_123",
+            payment_status: "paid",
+            amount_total: 400,
+            currency: "usd",
+            metadata: { plan: "Resident", neonUserId: "user_123" },
+          },
+        },
+      },
+      { activatePlan, onPurchase },
+    );
+
+    expect(result).toBe("processed");
+    expect(onPurchase).toHaveBeenCalledTimes(1);
+    expect(onPurchase).toHaveBeenCalledWith({
+      userId: "user_123",
+      plan: "Resident",
+      amountCents: 400,
+      currency: "usd",
+      customerId: "cus_123",
+      stripeEventId: "evt_purchase",
+    });
+  });
+
+  it("does not notify onPurchase when the event is ignored", async () => {
+    const activatePlan = vi.fn();
+    const onPurchase = vi.fn();
+
+    const result = await applyStripeEvent(
+      {
+        id: "evt_unpaid",
+        type: "checkout.session.completed",
+        data: {
+          object: {
+            object: "checkout.session",
+            client_reference_id: "user_123",
+            customer: "cus_123",
+            payment_status: "unpaid",
+            amount_total: 400,
+            currency: "usd",
+            metadata: { plan: "Resident", neonUserId: "user_123" },
+          },
+        },
+      },
+      { activatePlan, onPurchase },
+    );
+
+    expect(result).toBe("ignored");
+    expect(onPurchase).not.toHaveBeenCalled();
+  });
+
+  it("still processes the webhook when the onPurchase hook throws", async () => {
+    const activatePlan = vi.fn().mockResolvedValue(undefined);
+    const onPurchase = vi.fn().mockRejectedValue(new Error("tracking down"));
+
+    const result = await applyStripeEvent(
+      {
+        id: "evt_hook_throws",
+        type: "checkout.session.completed",
+        data: {
+          object: {
+            object: "checkout.session",
+            client_reference_id: "user_123",
+            customer: "cus_123",
+            payment_status: "paid",
+            amount_total: 400,
+            currency: "usd",
+            metadata: { plan: "Resident", neonUserId: "user_123" },
+          },
+        },
+      },
+      { activatePlan, onPurchase },
+    );
+
+    expect(result).toBe("processed");
+    expect(activatePlan).toHaveBeenCalled();
+  });
 });
