@@ -61,8 +61,12 @@ export function FilterControls({
             id="editor-rotation"
             name="editor-rotation"
             type="range"
-            min="-180"
-            max="180"
+            // Straighten, not free rotation: the upload-time zoom buffer
+            // (see EditorPanel.tsx) only covers a few degrees of tilt before
+            // the rotated image exposes canvas past its edges. +-180 let a
+            // user rotate far past that margin with no warning.
+            min="-15"
+            max="15"
             step="1"
             value={rotation}
             onChange={(e) => onRotationChange(parseInt(e.target.value))}
