@@ -4,30 +4,24 @@ import { useEffect, useState } from "react";
 import {
   formatCountdown,
   getErasDeadlineState,
-  type CountdownParts,
 } from "@/lib/eras-deadline";
 
-const emptyCountdown: CountdownParts = {
-  days: 0,
-  hours: 0,
-  minutes: 0,
-  seconds: 0,
-};
-
 export function ErasDeadlineCountdown() {
-  const [now, setNow] = useState<Date | null>(null);
+  // Initialize with the real date so the first paint (SSR + hydration)
+  // already shows the correct phase. The old `null` initial state rendered
+  // the pre-submission message until the effect ran, showing a stale
+  // "ERAS submissions open September 2" after that date had passed.
+  const [now, setNow] = useState<Date>(() => new Date());
 
   useEffect(() => {
-    const updateNow = () => setNow(new Date());
-    updateNow();
     // Minutes are the finest unit shown; no need to re-render every second.
-    const timer = window.setInterval(updateNow, 30_000);
+    const timer = window.setInterval(() => setNow(new Date()), 30_000);
 
     return () => window.clearInterval(timer);
   }, []);
 
-  const state = getErasDeadlineState(now ?? new Date(0));
-  const countdown = now ? formatCountdown(state.remainingMs) : emptyCountdown;
+  const state = getErasDeadlineState(now);
+  const countdown = formatCountdown(state.remainingMs);
 
   const message =
     state.phase === "pre-submission"
@@ -36,7 +30,7 @@ export function ErasDeadlineCountdown() {
         ? "Programs begin reviewing September 23"
         : "Programs are reviewing applications now";
 
-  const showTimer = state.phase !== "review-open" && now !== null;
+  const showTimer = state.phase !== "review-open";
 
   return (
     <div className="flex justify-center px-4 pt-4">
