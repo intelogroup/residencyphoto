@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import React, { useState } from "react";
-import { ArrowRight, CalendarDays, Check, CircleCheck, Edit3, ImagePlus, LockKeyhole, ScanLine } from "lucide-react";
+import { ArrowRight, Check, Edit3, ImagePlus } from "lucide-react";
 import { buildDashboardOverview } from "@/lib/dashboard-overview";
 import { getHistory, type HistoryRecord } from "@/lib/eras-storage";
 
@@ -12,32 +12,12 @@ interface OverviewProps {
   onOpenPhoto: (item: HistoryRecord) => void;
 }
 
-function WorkflowStep({ index, title, complete, active }: { index: number; title: string; complete: boolean; active: boolean }) {
-  return (
-    <div className="relative flex min-w-0 items-center gap-2">
-      <div className={`relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${complete ? "bg-primary text-white" : active ? "border-2 border-primary bg-primary/10 text-primary" : "border border-slate-200 bg-white text-muted"}`}>
-        {complete ? <Check aria-hidden={true} className="h-4 w-4" /> : index}
-      </div>
-      <p className="truncate text-sm font-semibold text-heading">{title}</p>
-    </div>
-  );
-}
-
-export function OverviewPanel({ user, onStartEditor, onOpenPhoto }: OverviewProps) {
+export function OverviewPanel({ onStartEditor, onOpenPhoto }: OverviewProps) {
   const [history] = useState(() => (typeof window === "undefined" ? [] : getHistory()));
   const overview = buildDashboardOverview(history, new Date());
-  const currentPlan = user.plan ?? "Free";
-  const isUnpaid = currentPlan === "Free";
 
   return (
     <div className="space-y-5 animate-fade-in-up font-sans">
-      <header className="flex justify-end">
-        <div className="inline-flex w-fit items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-          <CalendarDays aria-hidden={true} className="h-4 w-4 shrink-0" />
-          <span><strong className="font-semibold tabular-nums">{overview.daysRemaining} days</strong> until programs begin reviewing</span>
-        </div>
-      </header>
-
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-subtle">
         <div className="grid lg:grid-cols-[minmax(0,1.2fr)_20rem]">
           <div className="flex flex-col justify-center p-5 sm:p-7">
@@ -67,10 +47,6 @@ export function OverviewPanel({ user, onStartEditor, onOpenPhoto }: OverviewProp
                 </button>
               )}
             </div>
-            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted">
-              <span className="inline-flex items-center gap-1.5"><LockKeyhole aria-hidden={true} className="h-3.5 w-3.5 text-primary" />Processed on your device</span>
-              <span className="inline-flex items-center gap-1.5"><ScanLine aria-hidden={true} className="h-3.5 w-3.5 text-primary" />6 readiness checks</span>
-            </div>
           </div>
 
           <div className="border-t border-slate-200 bg-slate-50 p-5 sm:p-6 lg:border-l lg:border-t-0">
@@ -93,45 +69,6 @@ export function OverviewPanel({ user, onStartEditor, onOpenPhoto }: OverviewProp
           </div>
         </div>
       </section>
-
-      <section aria-label="Dashboard status" className="grid overflow-hidden rounded-xl border border-slate-200 bg-white sm:grid-cols-2 lg:grid-cols-4">
-        <StatusItem label="Access" value={isUnpaid ? "Preview — $4 to download" : `${currentPlan} · unlimited`} icon={isUnpaid ? LockKeyhole : CircleCheck} />
-        <StatusItem label="Saved locally" value={`${overview.photoCount} ${overview.photoCount === 1 ? "photo" : "photos"}`} icon={ImagePlus} />
-        <StatusItem label="Processing" value="On your device" icon={LockKeyhole} />
-        <StatusItem label="Program review" value={overview.reviewDateLabel} icon={CalendarDays} />
-      </section>
-
-      <section className="rounded-xl border border-slate-200 bg-white px-5 py-5 sm:px-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-base font-semibold text-heading">Your progress</h2>
-            <p className="mt-1 text-xs text-muted">Upload, adjust, and download — one workflow.</p>
-          </div>
-          <div className="relative grid gap-3 sm:grid-cols-3 sm:gap-7">
-            <div aria-hidden="true" className="absolute left-4 right-4 top-3.5 hidden h-px bg-slate-200 sm:block" />
-            <WorkflowStep index={1} title="Upload" complete={overview.hasPhotos} active={!overview.hasPhotos} />
-            <WorkflowStep index={2} title="Adjust" complete={overview.hasPhotos} active={false} />
-            <WorkflowStep index={3} title="Download" complete={!isUnpaid && overview.hasPhotos} active={false} />
-          </div>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function StatusItem({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string;
-  value: string;
-  icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
-}) {
-  return (
-    <div className="flex min-w-0 items-center gap-3 border-b border-slate-100 px-4 py-4 last:border-b-0 sm:[&:nth-child(odd)]:border-r sm:[&:nth-child(n+3)]:border-b-0 lg:border-b-0 lg:border-r lg:last:border-r-0">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Icon aria-hidden={true} className="h-4 w-4" /></div>
-      <div className="min-w-0"><p className="text-xs text-muted">{label}</p><p className="mt-0.5 truncate text-sm font-semibold text-heading">{value}</p></div>
     </div>
   );
 }

@@ -9,27 +9,23 @@ import { EditorPanel } from "../_components/dashboard/EditorPanel";
 import { HistoryPanel } from "../_components/dashboard/HistoryPanel";
 import { SettingsPanel } from "../_components/dashboard/SettingsPanel";
 import { type HistoryRecord } from "@/lib/eras-storage";
-import { createDashboardInitialState, getDashboardSearchSnapshot, getDashboardServerSearchSnapshot, getOnboardingServerSnapshot, getOnboardingSnapshot, resolveDashboardClientState, subscribeToDashboardSession, type DashboardTab, type SettingsPanelTarget } from "@/lib/dashboard-session";
-import { Modal } from "@/components/Modal";
+import { createDashboardInitialState, getDashboardSearchSnapshot, getDashboardServerSearchSnapshot, resolveDashboardClientState, subscribeToDashboardSession, type DashboardTab, type SettingsPanelTarget } from "@/lib/dashboard-session";
 import { authClient } from "@/lib/auth/client";
 import { mapNeonSessionToEraUser } from "@/lib/auth-session";
 import { SupportModal } from "../_components/dashboard/SupportModal";
-
-const ONBOARDED_KEY = "eras_onboarded";
 
 export default function DashboardPage() {
   const router = useRouter();
   const session = authClient.useSession();
   const search = useSyncExternalStore(subscribeToDashboardSession, getDashboardSearchSnapshot, getDashboardServerSearchSnapshot);
-  const hasCompletedOnboarding = useSyncExternalStore(subscribeToDashboardSession, getOnboardingSnapshot, getOnboardingServerSnapshot);
   const [billingPlan, setBillingPlan] = useState<"Free" | "Resident" | "Program">("Free");
   const neonUser = mapNeonSessionToEraUser(session.data);
   const neonUserId = neonUser?.authId;
   const authenticatedUser = neonUser ? { ...neonUser, plan: billingPlan } : null;
   const dashboardSession = session.isPending
     ? createDashboardInitialState()
-    : resolveDashboardClientState(search, authenticatedUser, hasCompletedOnboarding);
-  const { activeTab, settingsTarget, showOnboarding, user } = dashboardSession;
+    : resolveDashboardClientState(search, authenticatedUser, true);
+  const { activeTab, settingsTarget, user } = dashboardSession;
   const [settingsPanelInstance, setSettingsPanelInstance] = useState(0);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
@@ -99,11 +95,6 @@ export default function DashboardPage() {
     router.refresh();
   };
 
-  const dismissOnboarding = () => {
-    localStorage.setItem(ONBOARDED_KEY, "1");
-    window.dispatchEvent(new Event("dashboard-session-change"));
-  };
-
   if (!dashboardSession.isReady || !user) {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center p-6 font-sans">
@@ -127,12 +118,6 @@ export default function DashboardPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#f6f8f7] pb-20 font-sans md:pb-0">
-      <div
-        aria-hidden="true"
-        className="fixed inset-0 bg-cover bg-center opacity-24 pointer-events-none"
-        style={{ backgroundImage: "url('/nature-bg.jpg')" }}
-      />
-      <div aria-hidden="true" className="fixed inset-0 bg-[#f6f8f7]/62 pointer-events-none" />
       {/* TOP NAVBAR */}
       <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
@@ -255,31 +240,6 @@ export default function DashboardPage() {
           ))}
         </div>
       </nav>
-
-      {/* First-run onboarding */}
-      <Modal open={showOnboarding} onClose={dismissOnboarding} maxWidth="max-w-lg">
-        <span className="tag mb-2">Welcome</span>
-        <h3 className="font-sans text-2xl font-semibold text-heading mt-1 mb-4">
-          Let&apos;s get your ERAS photo ready
-        </h3>
-        <ol className="space-y-4 mb-6">
-          <li className="flex gap-3">
-            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">1</span>
-            <span className="text-sm text-body leading-relaxed">Upload a high-resolution headshot with a plain background.</span>
-          </li>
-          <li className="flex gap-3">
-            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">2</span>
-            <span className="text-sm text-body leading-relaxed">Crop to the guide and adjust brightness/warmth as needed.</span>
-          </li>
-          <li className="flex gap-3">
-            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">3</span>
-            <span className="text-sm text-body leading-relaxed">Download — sized and compressed to exact AAMC ERAS specs.</span>
-          </li>
-        </ol>
-        <button onClick={dismissOnboarding} className="w-full btn-primary">
-          Get started
-        </button>
-      </Modal>
 
       <SupportModal open={supportOpen} onClose={() => setSupportOpen(false)} user={user} />
     </div>

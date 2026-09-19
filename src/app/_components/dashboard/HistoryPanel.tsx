@@ -76,11 +76,6 @@ export function HistoryPanel({ onOpenPhoto }: HistoryPanelProps) {
             }}
             className="polaroid-frame border relative flex flex-col justify-between group cursor-pointer"
           >
-            {/* Stamp Overlay top right */}
-            <div className="absolute top-2 right-2 z-10 scale-75 origin-top-right">
-              <span className="stamp-approve">Approved</span>
-            </div>
-
             {/* Thumbnail Box */}
             <div className="aspect-[5/7] w-full overflow-hidden bg-slate-100 border border-slate-100">
               <Image
