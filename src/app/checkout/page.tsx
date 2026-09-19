@@ -2,6 +2,7 @@
 
 import { ArrowLeft, ArrowRight, Check, LockKeyhole, ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import posthog from "posthog-js";
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { getStripePlan, type StripePlanName } from "@/lib/stripe-plans";
@@ -48,6 +49,11 @@ function CheckoutContent() {
 
     setLoading(true);
     setError("");
+    posthog.capture("checkout_started", {
+      plan: selectedPlan.name,
+      value: selectedPlan.amount / 100,
+      currency: selectedPlan.currency.toUpperCase(),
+    });
     try {
       const response = await fetch("/api/checkout/create-session", {
         method: "POST",
