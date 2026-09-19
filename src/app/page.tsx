@@ -1,6 +1,5 @@
 import { Nav } from "./_components/landing/Nav";
 import { Hero } from "./_components/landing/Hero";
-import { HowItWorks } from "./_components/landing/HowItWorks";
 import { Features } from "./_components/landing/Features";
 import { Pricing } from "./_components/landing/Pricing";
 import { Footer } from "./_components/landing/Footer";
@@ -14,10 +13,8 @@ export default function HomePage() {
       <Nav />
       <ErasDeadlineCountdown />
       <Hero />
-      <HowItWorks />
       <Features />
       <Pricing />
       <Footer />
     </main>
   );
-}
