@@ -21,7 +21,7 @@ export function Hero() {
           <Link href="/login" className="btn-primary">
             Upload your photo
           </Link>
-          <a href="#how-it-works" className="btn-ghost">
+          <a href="#features" className="btn-ghost">
             See how it works
           </a>
         </div>

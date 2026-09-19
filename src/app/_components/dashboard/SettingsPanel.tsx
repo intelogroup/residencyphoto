@@ -204,8 +204,7 @@ export function SettingsPanel({ user, initialPanel = null, onOpenSupport }: Sett
               <div className="p-4">
                 <button type="button" onClick={handleUpgrade} className="btn-primary w-full gap-2 px-4 py-2.5 text-sm">
                   <ArrowUpCircle aria-hidden={true} className="h-4 w-4" />
-                  Unlock Downloads
-                  <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-white ring-1 ring-white/30">$4</span>
+                  Unlock Downloads · {planPrice}
                 </button>
               </div>
             )}

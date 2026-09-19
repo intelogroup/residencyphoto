@@ -100,7 +100,7 @@ export function OverviewPanel({ onStartEditor, onOpenPhoto, onSelectFile }: Over
           }}
           onDragLeave={() => setDragging(false)}
           onDrop={handleDrop}
-          className={`flex min-h-80 cursor-pointer flex-col items-center justify-center rounded-[20px] border-2 border-dashed bg-white px-6 py-14 text-center shadow-raised transition-[border-color,background-color,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+          className={`flex min-h-[24rem] cursor-pointer flex-col items-center justify-center rounded-[20px] border-[1.5px] border-dashed bg-white px-6 py-16 text-center shadow-raised transition-[border-color,background-color,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
             dragging ? "scale-[1.01] border-primary bg-primary/[0.04]" : "border-slate-300 hover:border-primary/60"
           }`}
         >
@@ -116,14 +116,14 @@ export function OverviewPanel({ onStartEditor, onOpenPhoto, onSelectFile }: Over
               event.target.value = "";
             }}
           />
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <ImagePlus aria-hidden={true} className="h-6 w-6" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <ImagePlus aria-hidden={true} className="h-7 w-7" />
           </div>
-          <h2 className="mt-5 text-xl font-semibold tracking-tight text-heading sm:text-2xl">
+          <h2 className="mt-5 text-2xl font-semibold tracking-tight text-heading sm:text-[28px]">
             Drop a photo to start
           </h2>
           <p className="mt-2 text-sm text-muted">5:7 crop · 375 × 525 px · under 150 KB</p>
-          <span className="btn-primary mt-6 gap-2 px-6 py-2.5 text-sm" aria-hidden={true}>
+          <span className="btn-primary mt-8 gap-2 px-7 py-3 text-sm" aria-hidden={true}>
             Choose a photo
             <ArrowRight aria-hidden={true} className="h-4 w-4" />
           </span>

@@ -23,7 +23,6 @@ export function Footer() {
             <h4 className="font-sans text-xs font-semibold text-heading uppercase tracking-wide">Navigate</h4>
             <div className="flex flex-col gap-2 font-sans text-sm text-muted">
               <a href="#features" className="hover:text-primary transition-colors">Features</a>
-              <a href="#how-it-works" className="hover:text-primary transition-colors">How It Works</a>
               <a href="#pricing" className="hover:text-primary transition-colors">Pricing</a>
               <Link href="/blog" className="hover:text-primary transition-colors">Blog</Link>
               <a href="/login" className="hover:text-primary transition-colors">Open editor</a>

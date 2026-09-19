@@ -20,7 +20,6 @@ export function Nav() {
         <nav className="hidden md:flex items-center gap-8 font-sans text-xs font-semibold text-body">
           <Link href="/" className="hover:text-primary transition-colors">Home</Link>
           <a href="#features" className="hover:text-primary transition-colors">Features</a>
-          <a href="#how-it-works" className="hover:text-primary transition-colors">How It Works</a>
           <a href="#pricing" className="hover:text-primary transition-colors">Pricing</a>
         </nav>
 

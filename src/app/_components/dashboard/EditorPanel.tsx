@@ -539,7 +539,7 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
     <div className="mx-auto max-w-6xl space-y-6 animate-fade-in-up font-sans">
       <header className="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-heading sm:text-3xl">Prepare Your ERAS Photo</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-heading sm:text-3xl">Prepare your ERAS photo</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Crop, adjust, and export a polished headshot sized for your residency application.</p>
         </div>
         {imageSrc && <div className="flex items-center gap-2 rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-medium text-primary-dark"><Crop aria-hidden={true} className="h-4 w-4" />Editing {fileName}</div>}
