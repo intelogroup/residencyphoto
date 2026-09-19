@@ -4,19 +4,19 @@ import { isAllowedTelemetryEvent, sanitizeTelemetryEvent } from "./privacy-setti
 describe("telemetry privacy controls", () => {
   it("only permits known model-loading events", () => {
     expect(isAllowedTelemetryEvent("face_landmarker_load")).toBe(true);
-    expect(isAllowedTelemetryEvent("clip_classifier_load")).toBe(true);
+    expect(isAllowedTelemetryEvent("image_classifier_load")).toBe(true);
     expect(isAllowedTelemetryEvent("photo_filename.jpg")).toBe(false);
   });
 
   it("drops arbitrary details and bounds duration", () => {
     expect(sanitizeTelemetryEvent({
-      event: "clip_classifier_load",
+      event: "image_classifier_load",
       status: "error",
       detail: "blob:https://example.test/private-photo",
       durationMs: 1234.9,
       filename: "private-photo.jpg",
     })).toEqual({
-      event: "clip_classifier_load",
+      event: "image_classifier_load",
       status: "error",
       durationMs: 1235,
     });

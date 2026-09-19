@@ -2,7 +2,7 @@ export const PHOTO_HISTORY_KEY = "eras_photo_history_enabled";
 
 const ALLOWED_TELEMETRY_EVENTS = new Set([
   "face_landmarker_load",
-  "clip_classifier_load",
+  "image_classifier_load",
 ]);
 
 export function isPhotoHistoryEnabled(): boolean {

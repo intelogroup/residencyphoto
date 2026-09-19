@@ -1,19 +1,12 @@
 {
-  "huggingFaceRevision": "d15189d7028b43f1d3e65039190477f6af591c2a",
   "sha256": {
-    "transformers/Xenova/clip-vit-base-patch32/config.json": "493ef57ff783e42d1530c91b53469b7fdf8db8a9c1408e86998fcb7899a4f495",
-    "transformers/Xenova/clip-vit-base-patch32/merges.txt": "9fd691f7c8039210e0fced15865466c65820d09b63988b0174bfe25de299051a",
-    "transformers/Xenova/clip-vit-base-patch32/onnx/text_model_quantized.onnx": "73baab855d406190da9faa498cfedf65f15cf309f4cc7385b7b032e6d08e5c3a",
-    "transformers/Xenova/clip-vit-base-patch32/onnx/vision_model_quantized.onnx": "583fd1110a514667812fee7d684952aaf82a99b959760c8d7dca7e0ab9839299",
-    "transformers/Xenova/clip-vit-base-patch32/preprocessor_config.json": "6f638fb9401a6d6296feff533ee7efe657b787c49f954f82f5906b36ef2a1b1f",
-    "transformers/Xenova/clip-vit-base-patch32/special_tokens_map.json": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac",
-    "transformers/Xenova/clip-vit-base-patch32/tokenizer.json": "f7f3b7af117d467b58374797691a6438d3e6b9e9cef800dfd5dced7f697a90cd",
-    "transformers/Xenova/clip-vit-base-patch32/tokenizer_config.json": "60ba2912bc6344c94bc16bbdec27fa1209409167b6f2fdf3cfe9e65462ea3967",
-    "transformers/Xenova/clip-vit-base-patch32/vocab.json": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363",
     "mediapipe/face_landmarker.task": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff",
-    "onnx-wasm/ort-wasm-simd-threaded.asyncify.mjs": "5959c6733039619c9af710d8e1bae8d6e84402787990637be987c2b1bd6c5fa9",
-    "onnx-wasm/ort-wasm-simd-threaded.asyncify.wasm": "e0c0c6d3e73d43b8a249972f8358f845b08cc16fec3c80efafdf8bed40366786",
-    "onnx-wasm/ort-wasm-simd-threaded.mjs": "5f2cd914554830762579c372d0211614c1e3f40ab3f6c0cfcf0900343229071d",
-    "onnx-wasm/ort-wasm-simd-threaded.wasm": "f4f290847a4df02d0b93cdbf39b4b0e71acefbe80573e7e6b9342a7abd7b290a"
+    "image_classifier/efficientnet_lite0_int8.tflite": "bc2ffe19c1118de0c0c2a9088992da5589722656e0fba81421385300a4a34b16",
+    "mediapipe/wasm/vision_wasm_internal.wasm": "6a5c64584c2ab61c763b6e204afbdbc7ce1caf7f5216187322bca8df94f646bc",
+    "mediapipe/wasm/vision_wasm_internal.js": "e7fd9858e8e8f221d9b96eddc11f8e077f263e0b7bbd79d3cbe882b134274f8c",
+    "mediapipe/wasm/vision_wasm_nosimd_internal.wasm": "8a3092d34c79d3f57e6ba8592105e8a90f6b07c27891ffecd14cca428bfd3e31",
+    "mediapipe/wasm/vision_wasm_nosimd_internal.js": "438d1fe8ff7f4d946025bc211c291543c037d8a3785ed4eee60f1f521b236296",
+    "mediapipe/wasm/vision_wasm_module_internal.wasm": "617b8e0248dbd27e9d7ece4218004eae4cefb499196d1bb4fa0e3fef21708756",
+    "mediapipe/wasm/vision_wasm_module_internal.js": "1f1d6215324a1fe62f6742d49a3db911170987ca18ad8c1b75f1a1c82acf2b44"
   }
 }

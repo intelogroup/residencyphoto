@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { getFaceLandmarker, getClassifier } from "@/lib/eras-ml";
+import { getFaceLandmarker, getImageClassifier, detectSunglasses, detectCasualAttire } from "@/lib/eras-ml";
 import { computeFramingWarning, computePoseWarning, type FaceCountResult } from "@/lib/eras-checks";
 
 interface UseEraDetectorsArgs {
@@ -51,17 +51,16 @@ export function useEraDetectors({ canvasRef, image, zoom, rotation, position, im
 
   const detectEyewear = async (img: HTMLImageElement) => {
     try {
-      const classifier = await getClassifier();
+      const classifier = await getImageClassifier();
       setClassifierWarning(null);
-      const labels = ["a person wearing sunglasses or dark tinted glasses", "a person with bare, clearly visible eyes"];
-      const result = await classifier(img.src, labels);
-      const top = Array.isArray(result) ? result[0] : result;
+      const result = classifier.classify(img);
+      const categories =
+        result.classifications?.[0]?.categories.map((category) => ({
+          categoryName: category.categoryName,
+          score: category.score,
+        })) ?? [];
 
-      // Measured against real photos: ordinary clear prescription glasses
-      // scored 0.630 on this same binary prompt — right past the old 0.6
-      // cutoff, a false positive. 0.75 leaves headroom above that while
-      // still catching actual dark/tinted lenses, which score well above it.
-      if (top?.label === labels[0] && top.score > 0.75) {
+      if (detectSunglasses(categories)) {
         setEyewearWarning("Sunglasses or tinted glasses detected — ERAS requires your eyes to be clearly visible.");
       } else {
         setEyewearWarning(null);
@@ -76,16 +75,16 @@ export function useEraDetectors({ canvasRef, image, zoom, rotation, position, im
   // attire recommended," not mandatory, so keep the threshold conservative.
   const detectAttire = async (img: HTMLImageElement) => {
     try {
-      const classifier = await getClassifier();
+      const classifier = await getImageClassifier();
       setClassifierWarning(null);
-      const labels = [
-        "a person wearing formal business attire such as a suit, blazer, or collared shirt",
-        "a person wearing casual clothing such as a t-shirt or hoodie",
-      ];
-      const result = await classifier(img.src, labels);
-      const top = Array.isArray(result) ? result[0] : result;
+      const result = classifier.classify(img);
+      const categories =
+        result.classifications?.[0]?.categories.map((category) => ({
+          categoryName: category.categoryName,
+          score: category.score,
+        })) ?? [];
 
-      if (top?.label === labels[1] && top.score > 0.65) {
+      if (detectCasualAttire(categories)) {
         setAttireWarning("Clothing looks casual — ERAS recommends business attire (suit, blazer, or collared shirt).");
       } else {
         setAttireWarning(null);
@@ -96,9 +95,9 @@ export function useEraDetectors({ canvasRef, image, zoom, rotation, position, im
     }
   };
 
-  // Sequential, not parallel: the CLIP classifier instance isn't safe to call
-  // twice concurrently, and sunglasses/attire are two separate binary questions
-  // (mixing their labels into one call would normalize scores across both).
+  // Sequential, not parallel: the image classifier is a lazily-loaded
+  // singleton and the eyewear/attire checks run back-to-back on upload — one
+  // classify() call each, so there's nothing to gain from racing them.
   const runUploadChecks = async (img: HTMLImageElement) => {
     setFaceWarning(null);
     setEyewearWarning(null);

@@ -2,15 +2,11 @@ import { describe, expect, it } from "vitest";
 import { getMlAssetConfig } from "./ml-assets";
 
 describe("getMlAssetConfig", () => {
-  it("uses same-origin paths and disables remote model fallback", () => {
+  it("uses same-origin paths for the MediaPipe landmarker and image classifier", () => {
     expect(getMlAssetConfig()).toEqual({
       mediapipeWasmPath: "/ml/mediapipe/wasm",
       faceLandmarkerModelPath: "/ml/mediapipe/face_landmarker.task",
-      transformersModelPath: "/ml/transformers/",
-      transformersWasmPath: "/ml/onnx-wasm/",
-      allowRemoteModels: false,
-      clipModelId: "Xenova/clip-vit-base-patch32",
-      clipDtype: "q8",
+      imageClassifierModelPath: "/ml/image_classifier/efficientnet_lite0_int8.tflite",
     });
   });
 });
