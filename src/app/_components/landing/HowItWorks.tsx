@@ -6,19 +6,19 @@ import { useState, useEffect } from "react";
 const STEPS_DATA = [
   {
     title: "Upload your photo",
-    body: "Drag and drop your headshot from your computer or phone. JPEG, PNG, and HEIC all work.",
+    body: "From your computer or phone. JPEG, PNG, and HEIC all work.",
   },
   {
     title: "Center it",
-    body: "We automatically frame your head and shoulders so your face sits exactly where ERAS expects it.",
+    body: "Framed automatically, so your face sits exactly where ERAS expects it.",
   },
   {
     title: "Fine-tune the size",
-    body: "We scale and compress it to fit 2.5 x 3.5 inches at 150 DPI, under the 150 KB limit — automatically.",
+    body: "Scaled to 2.5 × 3.5 in at 150 DPI, under the 150 KB limit — automatically.",
   },
   {
     title: "Download",
-    body: "Save your finished photo straight to your device. Nothing is ever stored on a server.",
+    body: "Saved straight to your device. Nothing is ever stored on a server.",
   },
 ];
 
@@ -41,9 +41,6 @@ export function HowItWorks() {
         <h2 className="font-sans text-4xl font-bold text-heading">
           Four steps, one minute
         </h2>
-        <p className="font-sans text-sm text-muted">
-          No photo editing experience needed — just upload and go.
-        </p>
       </div>
 
       <div className="grid md:grid-cols-5 gap-12 items-center">
@@ -89,8 +86,8 @@ export function HowItWorks() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                   </svg>
                 </div>
-                <p className="text-sm font-semibold text-heading">Just drop your photo in</p>
-                <p className="text-sm text-muted">We support JPEG, PNG, and HEIC files</p>
+                <p className="text-sm font-semibold text-heading">Drop your photo in</p>
+                <p className="text-sm text-muted">JPEG, PNG, and HEIC supported</p>
               </div>
             )}
 
@@ -109,7 +106,7 @@ export function HowItWorks() {
                 <div className="space-y-2">
                   <h4 className="font-sans text-sm font-semibold text-heading">Perfectly framed</h4>
                   <p className="text-sm text-muted leading-relaxed">
-                    We line up your eyes and shoulders so your face sits right where it should.
+                    Eyes and shoulders lined up, right where they should be.
                   </p>
                   <span className="pill-success">Nicely centered</span>
                 </div>
@@ -142,7 +139,7 @@ export function HowItWorks() {
                 </div>
                 <h4 className="text-heading text-sm font-semibold">All set</h4>
                 <p className="text-sm text-muted max-w-xs mx-auto">
-                  Your photo matches every ERAS requirement, ready to download.
+                  Matches every ERAS requirement.
                 </p>
               </div>
             )}

@@ -12,17 +12,17 @@ const CHECKLIST_SPECS = [
 const WHY_IT_WORKS = [
   {
     title: "No Photoshop Needed",
-    text: "Adjust zoom and position until your photo says Ready.",
+    text: "Zoom and position until it says Ready.",
     icon: SlidersHorizontal,
   },
   {
     title: "Nothing Uploaded",
-    text: "Cropping and compression happen in your browser. Your photo never touches a server.",
+    text: "Everything happens in your browser — your photo never touches a server.",
     icon: ShieldCheck,
   },
   {
     title: "Built to the Real Spec",
-    text: "Dimensions, resolution, and file size are checked against ERAS photo requirements.",
+    text: "Dimensions, resolution, and file size checked against the ERAS spec.",
     icon: FileCheck2,
   },
 ];
@@ -37,7 +37,7 @@ export function Features() {
             Every ERAS Photo Requirement, Checked Automatically
           </h2>
           <p className="mt-4 text-pretty font-sans text-sm leading-6 text-body md:text-base">
-            You don&apos;t need to understand DPI, dimensions, or compression. Upload your photo and we handle the technical details.
+            You don&apos;t need to understand DPI, dimensions, or compression. We handle the technical details.
           </p>
         </div>
 

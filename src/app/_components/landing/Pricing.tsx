@@ -55,9 +55,6 @@ export function Pricing() {
             <div className="mb-4">
               <h3 className="font-sans text-xl font-bold tracking-tight text-heading">{plan.name}</h3>
               <p className="font-sans text-sm leading-5 text-muted mt-1">{plan.blurb}</p>
-              {plan.name === "Program" && (
-                <p className="mt-1 text-xs font-medium text-primary-dark">For teams · shared access</p>
-              )}
             </div>
 
             <div className="flex items-baseline gap-1.5 py-4">

@@ -26,9 +26,9 @@ function useCountUp(target: number, active: boolean, duration = 1000) {
 }
 
 const STATS_DATA = [
-  { label: "Things we check", target: 6, suffix: "", sub: "Size, resolution, file weight — every ERAS rule", isRating: false },
-  { label: "Match rate", target: 100, suffix: "%", sub: "Your photo comes out exactly to spec", isRating: false },
-  { label: "Minutes it takes", target: 1, suffix: "", sub: "Upload, adjust, download", isRating: false },
+  { label: "Things we check", target: 6, suffix: "", sub: "Size, resolution, file weight", isRating: false },
+  { label: "Match rate", target: 100, suffix: "%", sub: "Exactly to spec", isRating: false },
+  { label: "Time it takes", target: 1, suffix: "", sub: "Upload, adjust, download", isRating: false },
 ];
 
 export function Stats() {
