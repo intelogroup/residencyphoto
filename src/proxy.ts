@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { auth } from "@/lib/auth/server";
-import { checkAuthRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkAuthRateLimitSafe, getClientIp } from "@/lib/rate-limit";
 
 const protectedRoutes = auth.middleware({ loginUrl: "/auth/sign-in" });
 
@@ -11,7 +11,8 @@ export default async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith("/api/auth")) {
     const needsRateLimit = rateLimitedAuthPaths.some((path) => request.nextUrl.pathname.startsWith(path));
     if (needsRateLimit) {
-      const { success } = await checkAuthRateLimit(getClientIp(request));
+      // Fail-open: a stalled/broken limiter must never hang the request.
+      const { success } = await checkAuthRateLimitSafe(getClientIp(request));
       if (!success) {
         return NextResponse.json({ error: "Too many attempts. Try again shortly." }, { status: 429 });
       }

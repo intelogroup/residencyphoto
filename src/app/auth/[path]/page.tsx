@@ -2,6 +2,7 @@ import { AuthView } from "@neondatabase/auth-ui";
 import { authViewPaths } from "@neondatabase/auth-ui/server";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SignInForm } from "@/components/auth/SignInForm";
 
 export const dynamicParams = false;
 
@@ -37,7 +38,14 @@ export default async function AuthPage({ params }: { params: Promise<{ path: str
         ResidencyPhoto
       </Link>
       <div className="relative z-10 w-full flex justify-center">
-        <AuthView path={path} redirectTo="/dashboard" />
+        {/* Custom sign-in form: owns the submit lifecycle (client timeout,
+            persistent error banner, password kept on failure). All other auth
+            views keep the vendor AuthView. */}
+        {path === "sign-in" ? (
+          <SignInForm />
+        ) : (
+          <AuthView path={path} redirectTo="/dashboard" />
+        )}
       </div>
     </main>
   );
