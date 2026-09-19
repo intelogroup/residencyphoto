@@ -57,7 +57,11 @@ export function useEraDetectors({ canvasRef, image, zoom, rotation, position, im
       const result = await classifier(img.src, labels);
       const top = Array.isArray(result) ? result[0] : result;
 
-      if (top?.label === labels[0] && top.score > 0.6) {
+      // Measured against real photos: ordinary clear prescription glasses
+      // scored 0.630 on this same binary prompt — right past the old 0.6
+      // cutoff, a false positive. 0.75 leaves headroom above that while
+      // still catching actual dark/tinted lenses, which score well above it.
+      if (top?.label === labels[0] && top.score > 0.75) {
         setEyewearWarning("Sunglasses or tinted glasses detected — ERAS requires your eyes to be clearly visible.");
       } else {
         setEyewearWarning(null);
