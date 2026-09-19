@@ -80,6 +80,47 @@ export function computeBackgroundWarning(topLeftPixels: Uint8ClampedArray, topRi
   return null;
 }
 
+function averageColor(pixelArrays: Uint8ClampedArray[]): RGB {
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  let n = 0;
+  for (const data of pixelArrays) {
+    for (let i = 0; i < data.length; i += 4) {
+      r += data[i];
+      g += data[i + 1];
+      b += data[i + 2];
+      n++;
+    }
+  }
+  return { r: r / n, g: g / n, b: b / n };
+}
+
+// computeFramingWarning's top-margin check uses landmark 10 (the forehead),
+// not the outer hair/head silhouette — so a tall hairstyle or hat can still
+// crowd all the way to the canvas edge while the forehead landmark alone
+// still reads as having enough margin. This checks the actual pixels instead:
+// a strip across the top-center of the frame (where a crowded head would
+// show up, not the two corners already used for the background check) that
+// no longer resembles the sampled corner background means something (head,
+// hair, hat) is touching the top edge with no margin left.
+const TOP_EDGE_COLOR_DIFF = 90;
+
+export function computeTopEdgeWarning(
+  topCenterStripPixels: Uint8ClampedArray,
+  topLeftCornerPixels: Uint8ClampedArray,
+  topRightCornerPixels: Uint8ClampedArray,
+): string | null {
+  const background = averageColor([topLeftCornerPixels, topRightCornerPixels]);
+  const center = averageColor([topCenterStripPixels]);
+  const diff = Math.abs(center.r - background.r) + Math.abs(center.g - background.g) + Math.abs(center.b - background.b);
+
+  if (diff > TOP_EDGE_COLOR_DIFF) {
+    return "No space above your head — zoom out or move the photo down so there's a margin at the top.";
+  }
+  return null;
+}
+
 // Smallest zoom at which a source image of the given dimensions can still
 // fully cover the CANVAS_W x CANVAS_H frame (no blank canvas showing through).
 export function minCoverZoom(imgWidth: number, imgHeight: number): number {

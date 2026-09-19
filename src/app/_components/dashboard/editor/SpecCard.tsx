@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, CheckCircle2, Download, FileCheck2, RotateCcw, ShieldCheck, Upload } from "lucide-react";
+import { AlertOctagon, AlertTriangle, CheckCircle2, Download, FileCheck2, RotateCcw, ShieldCheck, Upload } from "lucide-react";
 import { MAX_FILE_KB } from "@/lib/eras-checks";
 
 interface SpecCardProps {
@@ -13,28 +13,37 @@ interface SpecCardProps {
   resolutionWarning: string | null;
   ratioWarning: string | null;
   bgWarning: string | null;
+  topEdgeWarning: string | null;
   faceWarning: string | null;
   eyewearWarning: string | null;
   attireWarning: string | null;
   framingWarning: string | null;
   poseWarning: string | null;
   sizeWarning: string | null;
+  // Not "the photo failed a check" — "a check never ran." Kept separate from
+  // WARNING_ORDER so it renders as its own, more serious banner instead of
+  // blending into the ordinary review list.
+  landmarkerWarning: string | null;
+  classifierWarning: string | null;
 }
 
-const WARNING_ORDER = ["resolutionWarning", "ratioWarning", "faceWarning", "poseWarning", "framingWarning", "eyewearWarning", "bgWarning", "attireWarning"] as const;
+const WARNING_ORDER = ["resolutionWarning", "ratioWarning", "faceWarning", "poseWarning", "framingWarning", "topEdgeWarning", "eyewearWarning", "bgWarning", "attireWarning"] as const;
 
 export function SpecCard(props: SpecCardProps) {
-  const { imageSrc, exportKB, isProcessing, onDownload, onReset, sizeWarning, downloadLocked } = props;
+  const { imageSrc, exportKB, isProcessing, onDownload, onReset, sizeWarning, downloadLocked, landmarkerWarning, classifierWarning } = props;
   const warnings = WARNING_ORDER.map((key) => props[key]).filter(Boolean) as string[];
-  const hasAnyWarning = warnings.length > 0 || !!sizeWarning;
+  const unavailableWarnings = [landmarkerWarning, classifierWarning].filter(Boolean) as string[];
+  const hasAnyWarning = warnings.length > 0 || !!sizeWarning || unavailableWarnings.length > 0;
   const isReady = !!imageSrc && !hasAnyWarning && !!exportKB && exportKB <= MAX_FILE_KB;
   const primaryWarning = sizeWarning || warnings[0];
 
   const readiness = !imageSrc
     ? { title: "Ready When You Are", description: "Upload a photo to check its ERAS readiness.", icon: Upload, tone: "bg-slate-50 border-slate-200 text-slate-600" }
-    : isReady
-      ? { title: "ERAS Ready", description: "Your photo meets the checks shown here.", icon: CheckCircle2, tone: "bg-primary/5 border-primary/20 text-primary-dark" }
-      : { title: "Needs Attention", description: primaryWarning ?? "Review the crop and quality checks before downloading.", icon: AlertTriangle, tone: "bg-amber-50 border-amber-200 text-amber-800" };
+    : unavailableWarnings.length > 0
+      ? { title: "Can't Verify This Photo", description: "Some automatic checks failed to load — see below. Review your photo manually before downloading.", icon: AlertOctagon, tone: "bg-red-50 border-red-200 text-red-800" }
+      : isReady
+        ? { title: "ERAS Ready", description: "Your photo meets the checks shown here.", icon: CheckCircle2, tone: "bg-primary/5 border-primary/20 text-primary-dark" }
+        : { title: "Needs Attention", description: primaryWarning ?? "Review the crop and quality checks before downloading.", icon: AlertTriangle, tone: "bg-amber-50 border-amber-200 text-amber-800" };
   const ReadinessIcon = readiness.icon;
 
   return (
@@ -61,7 +70,14 @@ export function SpecCard(props: SpecCardProps) {
         </div>
       </section>
 
-      {imageSrc && hasAnyWarning && (
+      {imageSrc && unavailableWarnings.length > 0 && (
+        <section aria-live="polite" className="card border-red-200 bg-red-50/50 p-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-red-900"><AlertOctagon aria-hidden={true} className="h-4 w-4" />Checks Unavailable</div>
+          <ul className="mt-3 space-y-2 text-xs leading-5 text-red-900">{unavailableWarnings.map((warning) => <li key={warning} className="flex gap-2"><span aria-hidden={true}>•</span><span>{warning}</span></li>)}</ul>
+        </section>
+      )}
+
+      {imageSrc && (warnings.length > 0 || !!sizeWarning) && (
         <section aria-live="polite" className="card border-amber-200 bg-amber-50/50 p-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-amber-900"><AlertTriangle aria-hidden={true} className="h-4 w-4" />What to Review</div>
           <ul className="mt-3 space-y-2 text-xs leading-5 text-amber-900">{warnings.map((warning) => <li key={warning} className="flex gap-2"><span aria-hidden={true}>•</span><span>{warning}</span></li>)}{sizeWarning && <li className="flex gap-2"><span aria-hidden={true}>•</span><span>{sizeWarning}</span></li>}</ul>

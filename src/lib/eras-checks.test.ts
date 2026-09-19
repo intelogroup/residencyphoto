@@ -3,6 +3,7 @@ import {
   computeResolutionWarning,
   computeRatioWarning,
   computeBackgroundWarning,
+  computeTopEdgeWarning,
   computeFramingWarning,
   computePoseWarning,
   compressToTarget,
@@ -165,6 +166,38 @@ describe("computeBackgroundWarning", () => {
     // not a confusing color-neutrality message.
     const result = computeBackgroundWarning(solid(30, 5, 5), solid(30, 5, 5));
     expect(result).toMatch(/dark/i);
+  });
+});
+
+describe("computeTopEdgeWarning", () => {
+  const solid = (r: number, g: number, b: number, n = 900) => {
+    const data = new Uint8ClampedArray(n * 4);
+    for (let i = 0; i < n; i++) {
+      data[i * 4] = r;
+      data[i * 4 + 1] = g;
+      data[i * 4 + 2] = b;
+      data[i * 4 + 3] = 255;
+    }
+    return data;
+  };
+  const background = solid(230, 230, 230);
+
+  it("passes when the top-center strip matches the sampled background", () => {
+    expect(computeTopEdgeWarning(solid(230, 230, 230), background, background)).toBeNull();
+  });
+  it("passes minor JPEG-noise variation from the background", () => {
+    expect(computeTopEdgeWarning(solid(225, 232, 228), background, background)).toBeNull();
+  });
+  it("flags dark hair crowding the top edge with no margin left", () => {
+    expect(computeTopEdgeWarning(solid(30, 25, 20), background, background)).toMatch(/no space above/i);
+  });
+  it("flags skin tone touching the top edge", () => {
+    expect(computeTopEdgeWarning(solid(200, 150, 120), background, background)).toMatch(/no space above/i);
+  });
+  it("still compares against the background even when the two corners disagree slightly", () => {
+    const topLeft = solid(235, 235, 235);
+    const topRight = solid(225, 225, 225);
+    expect(computeTopEdgeWarning(solid(230, 230, 230), topLeft, topRight)).toBeNull();
   });
 });
 

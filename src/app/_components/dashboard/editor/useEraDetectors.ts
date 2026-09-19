@@ -21,11 +21,18 @@ export function useEraDetectors({ canvasRef, image, zoom, rotation, position, im
   const [attireWarning, setAttireWarning] = useState<string | null>(null);
   const [framingWarning, setFramingWarning] = useState<string | null>(null);
   const [poseWarning, setPoseWarning] = useState<string | null>(null);
+  // Distinct from the checks above: those report what the model *found*.
+  // These report that a model failed to load at all, so the checks it backs
+  // never ran — without this, a load failure silently no-ops every warning
+  // above and the photo reads as fully compliant when nothing was verified.
+  const [landmarkerWarning, setLandmarkerWarning] = useState<string | null>(null);
+  const [classifierWarning, setClassifierWarning] = useState<string | null>(null);
   const framingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const detectFace = async (img: HTMLImageElement) => {
     try {
       const landmarker = await getFaceLandmarker();
+      setLandmarkerWarning(null);
       const result = landmarker.detect(img);
       const faceCount = result.faceLandmarks?.length ?? 0;
 
@@ -38,12 +45,14 @@ export function useEraDetectors({ canvasRef, image, zoom, rotation, position, im
       }
     } catch (err) {
       console.error("Face check failed", err);
+      setLandmarkerWarning("Couldn't verify face detection, framing, or pose — the detection model failed to load. Review this manually before downloading.");
     }
   };
 
   const detectEyewear = async (img: HTMLImageElement) => {
     try {
       const classifier = await getClassifier();
+      setClassifierWarning(null);
       const labels = ["a person wearing sunglasses or dark tinted glasses", "a person with bare, clearly visible eyes"];
       const result = await classifier(img.src, labels);
       const top = Array.isArray(result) ? result[0] : result;
@@ -55,6 +64,7 @@ export function useEraDetectors({ canvasRef, image, zoom, rotation, position, im
       }
     } catch (err) {
       console.error("Eyewear check failed", err);
+      setClassifierWarning("Couldn't verify eyewear or attire — the classifier model failed to load. Review this manually before downloading.");
     }
   };
 
@@ -63,6 +73,7 @@ export function useEraDetectors({ canvasRef, image, zoom, rotation, position, im
   const detectAttire = async (img: HTMLImageElement) => {
     try {
       const classifier = await getClassifier();
+      setClassifierWarning(null);
       const labels = [
         "a person wearing formal business attire such as a suit, blazer, or collared shirt",
         "a person wearing casual clothing such as a t-shirt or hoodie",
@@ -77,6 +88,7 @@ export function useEraDetectors({ canvasRef, image, zoom, rotation, position, im
       }
     } catch (err) {
       console.error("Attire check failed", err);
+      setClassifierWarning("Couldn't verify eyewear or attire — the classifier model failed to load. Review this manually before downloading.");
     }
   };
 
@@ -95,6 +107,7 @@ export function useEraDetectors({ canvasRef, image, zoom, rotation, position, im
   const checkFramingAndPose = async (canvas: HTMLCanvasElement) => {
     try {
       const landmarker = await getFaceLandmarker();
+      setLandmarkerWarning(null);
       const snapshot = new Image();
       snapshot.src = canvas.toDataURL("image/jpeg", 0.8);
       await new Promise<void>((resolve) => {
@@ -120,6 +133,7 @@ export function useEraDetectors({ canvasRef, image, zoom, rotation, position, im
       setPoseWarning(computePoseWarning(face));
     } catch (err) {
       console.error("Framing/pose check failed", err);
+      setLandmarkerWarning("Couldn't verify face detection, framing, or pose — the detection model failed to load. Review this manually before downloading.");
     }
   };
 
@@ -147,6 +161,8 @@ export function useEraDetectors({ canvasRef, image, zoom, rotation, position, im
     setAttireWarning(null);
     setFramingWarning(null);
     setPoseWarning(null);
+    setLandmarkerWarning(null);
+    setClassifierWarning(null);
   };
 
   return {
@@ -155,6 +171,8 @@ export function useEraDetectors({ canvasRef, image, zoom, rotation, position, im
     attireWarning,
     framingWarning,
     poseWarning,
+    landmarkerWarning,
+    classifierWarning,
     runUploadChecks,
     reset,
   };
