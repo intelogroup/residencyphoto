@@ -4,6 +4,7 @@ import posthog from "posthog-js";
 import { PostHogProvider as PHPostHogProvider } from "posthog-js/react";
 import { useEffect, useRef } from "react";
 import { authClient } from "@/lib/auth/client";
+import { isMetaInAppBrowserException } from "@/lib/posthog-noise-filter";
 
 let initialized = false;
 
@@ -37,6 +38,10 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       ui_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.posthog.com",
       capture_pageview: true,
       capture_pageleave: true,
+      // Drop exceptions raised inside Meta's in-app browser bridge; they come
+      // from a script Meta injects, not from our code, and cannot be fixed.
+      before_send: (event) =>
+        isMetaInAppBrowserException(event) ? null : event,
     });
   }, []);
 
