@@ -22,6 +22,7 @@ export function createLogger(destination?: DestinationStream) {
           "*.webhookSecret",
           "stripeSignature",
           "apiKey",
+          "userId",
         ],
         censor: "[REDACTED]",
       },
