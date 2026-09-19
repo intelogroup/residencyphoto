@@ -10,6 +10,12 @@ on:
 permissions:
   contents: read
 
+# audit and test are separate jobs on purpose. They used to be sequential
+# steps in one job, so a failing `npm audit` skipped everything after it —
+# tests and the build never ran on any PR or push. A broken build reached
+# main that way (see bc637a1, restoring a closing brace that a previous
+# commit dropped). Keeping them apart means a dependency advisory still
+# reports red without also blinding CI to the code itself.
 jobs:
   audit:
     runs-on: ubuntu-latest
@@ -21,6 +27,20 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm audit --omit=dev --audit-level=high
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # public/ml holds Git LFS pointers, not real weights; ml:sync fetches
+      # the real binaries so the ml-assets integrity test has something to
+      # check. `npm run build` runs it again, which is redundant but left
+      # alone here since that script is also what Vercel runs.
       - run: npm run ml:sync
       - run: npm test
       - run: npm run build
