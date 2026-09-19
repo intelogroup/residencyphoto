@@ -14,6 +14,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       authClient={authClient}
       account={{ fields: ["name"] }}
       basePath="/auth"
+      // Absolute origin so the vendor AuthView builds absolute OAuth
+      // callbackURLs (Neon requires a trusted domain in production).
+      baseURL={window.location.origin}
       credentials={{ forgotPassword: true }}
       defaultTheme="light"
       Link={Link}

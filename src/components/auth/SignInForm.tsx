@@ -50,12 +50,21 @@ export function SignInForm() {
   async function handleGoogleSignIn() {
     if (isLoading) return;
     setError(null);
+    setIsLoading(true);
     try {
-      await authClient.signIn.social({ provider: "google", callbackURL: "/dashboard" });
+      // Absolute callback URL: Neon's Managed Better Auth requires the
+      // post-OAuth redirect to use a trusted domain in production. A bare
+      // "/dashboard" leaves the final redirect without an app origin, so the
+      // browser never lands back on the app's dashboard.
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: `${window.location.origin}/dashboard`,
+      });
     } catch {
       const message = "Couldn't start Google sign-in. Please try again.";
       setError(message);
       showToast(message, "error");
+      setIsLoading(false);
     }
   }
 
