@@ -56,13 +56,16 @@ export function SettingsPanel({ user, initialPanel = null, onOpenSupport }: Sett
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const planCardRef = useRef<HTMLElement>(null);
-  const [billingHighlight, setBillingHighlight] = useState(false);
+  // Seeded rather than set in the effect below: dashboard/page.tsx keys this
+  // component on the panel target plus a counter it bumps on every deep-link,
+  // so a "Plan & Billing" jump always remounts and re-runs this initializer —
+  // the same moment the effect would have fired, minus the extra render pass.
+  const [billingHighlight, setBillingHighlight] = useState(initialPanel === "billing");
 
   // Deep-link from the account menu ("Plan & Billing"): scroll to the plan card.
   useEffect(() => {
     if (initialPanel !== "billing") return;
     planCardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-    setBillingHighlight(true);
     const timer = setTimeout(() => setBillingHighlight(false), 2400);
     if (window.location.search.includes("panel=billing")) {
       window.history.replaceState(null, "", "/dashboard?tab=settings");

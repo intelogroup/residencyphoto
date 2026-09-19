@@ -37,6 +37,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npm run lint
       # public/ml holds Git LFS pointers, not real weights; ml:sync fetches
       # the real binaries so the ml-assets integrity test has something to
       # check. `npm run build` runs it again, which is redundant but left
