@@ -2,14 +2,16 @@
 
 import Image from "next/image";
 import React, { useState } from "react";
+import { ArrowRight } from "lucide-react";
 import { getHistory, clearHistory, removeHistoryRecord, type HistoryRecord } from "@/lib/eras-storage";
 import { isPhotoHistoryEnabled } from "@/lib/privacy-settings";
 
 interface HistoryPanelProps {
   onOpenPhoto: (item: HistoryRecord) => void;
+  onStartEditor: () => void;
 }
 
-export function HistoryPanel({ onOpenPhoto }: HistoryPanelProps) {
+export function HistoryPanel({ onOpenPhoto, onStartEditor }: HistoryPanelProps) {
   const [history, setHistory] = useState<HistoryRecord[]>(() => (typeof window === "undefined" ? [] : getHistory()));
   const historyEnabled = typeof window !== "undefined" && isPhotoHistoryEnabled();
 
@@ -40,31 +42,35 @@ export function HistoryPanel({ onOpenPhoto }: HistoryPanelProps) {
           <h3 className="font-sans text-lg font-semibold text-heading">No Photos Yet</h3>
           <p className="text-muted text-sm max-w-sm mx-auto leading-relaxed">
             {historyEnabled
-              ? "Head to the Photo Editor to prepare your headshot. Downloaded photos will appear here after you upgrade."
+              ? "Prepare your headshot in the photo editor. Downloaded photos will appear here after you upgrade."
               : "Photo history is off by default. Enable “Save processed photos in this browser” under Settings if you want local history."}
           </p>
         </div>
+        <button type="button" onClick={onStartEditor} className="btn-primary gap-2 px-6 py-2.5 text-sm">
+          Open photo editor
+          <ArrowRight aria-hidden={true} className="h-4 w-4" />
+        </button>
       </div>
     );
   }
 
   return (
     <div className="space-y-8 animate-fade-in-up font-sans">
-      <div className="flex justify-between items-center border-b border-slate-100 pb-4">
+      <div className="flex justify-between items-center pb-1">
         <div>
           <h3 className="font-sans text-xl font-semibold text-heading">My Photos</h3>
           <p className="text-muted text-sm mt-1">Your last 20 downloads, saved only in this browser.</p>
         </div>
         <button
           onClick={handleClearHistory}
-          className="text-sm text-red-600 hover:text-red-800 font-semibold cursor-pointer border border-red-200/50 hover:bg-red-50 px-4 py-2 rounded-lg transition-colors duration-150"
+          className="text-sm text-red-600 hover:text-red-800 font-semibold cursor-pointer border border-red-200/50 hover:bg-red-50 px-4 py-2 rounded-full transition-colors duration-150"
         >
           Clear history
         </button>
       </div>
 
-      {/* Grid of Polaroid crops */}
-      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-8">
+      {/* Grid of photo cards */}
+      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
         {history.map((item) => (
           <div
             key={item.id}
@@ -74,15 +80,10 @@ export function HistoryPanel({ onOpenPhoto }: HistoryPanelProps) {
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") onOpenPhoto(item);
             }}
-            className="polaroid-frame border relative flex flex-col justify-between group cursor-pointer"
+            className="group cursor-pointer overflow-hidden rounded-[20px] bg-white shadow-raised transition-shadow duration-150 hover:shadow-[0_12px_32px_rgba(15,23,42,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
-            {/* Stamp Overlay top right */}
-            <div className="absolute top-2 right-2 z-10 scale-75 origin-top-right">
-              <span className="stamp-approve">Approved</span>
-            </div>
-
-            {/* Thumbnail Box */}
-            <div className="aspect-[5/7] w-full overflow-hidden bg-slate-100 border border-slate-100">
+            {/* Thumbnail */}
+            <div className="aspect-[5/7] w-full overflow-hidden bg-slate-100">
               <Image
                 src={item.thumbnail}
                 alt={item.name}
@@ -93,49 +94,44 @@ export function HistoryPanel({ onOpenPhoto }: HistoryPanelProps) {
               />
             </div>
 
-            {/* Metadata Text Block */}
-            <div className="mt-4 space-y-2 text-xs text-muted border-t border-slate-100 pt-3">
-              <div className="truncate font-sans font-semibold text-slate-800 text-sm text-heading mb-1.5" title={item.name}>
-                {item.name}
+            {/* Metadata */}
+            <div className="p-4">
+              <div className="flex items-center justify-between gap-2">
+                <p className="truncate font-sans font-semibold text-slate-800 text-sm text-heading" title={item.name}>
+                  {item.name}
+                </p>
+                <span className="pill-success shrink-0">Compliant</span>
               </div>
-              <div className="flex justify-between border-b border-slate-100/50 pb-0.5">
-                <span>File size</span>
-                <span className="text-slate-800">{item.sizeKB} KB</span>
-              </div>
-              <div className="flex justify-between border-b border-slate-100/50 pb-0.5">
-                <span>Downloaded</span>
-                <span className="text-slate-800">{item.date}</span>
-              </div>
+              <p className="mt-1 text-xs text-muted">
+                {item.sizeKB} KB · {item.date}
+              </p>
 
-              <div className="pt-3 font-sans flex justify-between items-center text-sm">
-                <span className="text-xs text-green-600 font-bold">Compliant</span>
-                <div className="flex items-center gap-3">
-                  <a
-                    href={item.thumbnail}
-                    download={item.name}
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-primary font-semibold hover:underline flex items-center gap-1 cursor-pointer"
-                  >
-                    Download
-                    <svg aria-hidden="true" className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                    </svg>
-                  </a>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeletePhoto(item.id);
-                    }}
-                    aria-label={`Delete ${item.name}`}
-                    className="text-red-600 font-semibold hover:underline flex items-center gap-1 cursor-pointer"
-                  >
-                    Delete
-                    <svg aria-hidden="true" className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
+              <div className="mt-3 flex items-center gap-4 text-sm">
+                <a
+                  href={item.thumbnail}
+                  download={item.name}
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-primary font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  Download
+                  <svg aria-hidden="true" className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                  </svg>
+                </a>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeletePhoto(item.id);
+                  }}
+                  aria-label={`Delete ${item.name}`}
+                  className="text-red-600 font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  Delete
+                  <svg aria-hidden="true" className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
             </div>
           </div>

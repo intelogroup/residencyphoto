@@ -12,8 +12,9 @@ export function Hero() {
         </h1>
 
         <p className="font-sans text-base text-body max-w-md leading-relaxed">
-          ERAS asks for a very specific photo size and file type. Upload yours, drag it into place,
-          and we&apos;ll resize it to fit — no design skills needed, and your photo never leaves your browser.
+          ERAS asks for a very specific photo size and file type. Upload yours, drag it
+          into place, and we&apos;ll resize it to spec — no design skills needed, and
+          your photo never leaves your browser.
         </p>
 
         <div className="flex flex-wrap items-center gap-4 pt-2">

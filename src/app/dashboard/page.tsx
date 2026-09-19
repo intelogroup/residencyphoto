@@ -9,35 +9,53 @@ import { EditorPanel } from "../_components/dashboard/EditorPanel";
 import { HistoryPanel } from "../_components/dashboard/HistoryPanel";
 import { SettingsPanel } from "../_components/dashboard/SettingsPanel";
 import { type HistoryRecord } from "@/lib/eras-storage";
-import { createDashboardInitialState, getDashboardSearchSnapshot, getDashboardServerSearchSnapshot, getOnboardingServerSnapshot, getOnboardingSnapshot, resolveDashboardClientState, subscribeToDashboardSession, type DashboardTab, type SettingsPanelTarget } from "@/lib/dashboard-session";
-import { Modal } from "@/components/Modal";
+import { createDashboardInitialState, getDashboardSearchSnapshot, getDashboardServerSearchSnapshot, resolveDashboardClientState, subscribeToDashboardSession, type DashboardTab, type SettingsPanelTarget } from "@/lib/dashboard-session";
 import { authClient } from "@/lib/auth/client";
 import { mapNeonSessionToEraUser } from "@/lib/auth-session";
 import { SupportModal } from "../_components/dashboard/SupportModal";
-
-const ONBOARDED_KEY = "eras_onboarded";
 
 export default function DashboardPage() {
   const router = useRouter();
   const session = authClient.useSession();
   const search = useSyncExternalStore(subscribeToDashboardSession, getDashboardSearchSnapshot, getDashboardServerSearchSnapshot);
-  const hasCompletedOnboarding = useSyncExternalStore(subscribeToDashboardSession, getOnboardingSnapshot, getOnboardingServerSnapshot);
   const [billingPlan, setBillingPlan] = useState<"Free" | "Resident" | "Program">("Free");
   const neonUser = mapNeonSessionToEraUser(session.data);
   const neonUserId = neonUser?.authId;
   const authenticatedUser = neonUser ? { ...neonUser, plan: billingPlan } : null;
   const dashboardSession = session.isPending
     ? createDashboardInitialState()
-    : resolveDashboardClientState(search, authenticatedUser, hasCompletedOnboarding);
-  const { activeTab, settingsTarget, showOnboarding, user } = dashboardSession;
+    : resolveDashboardClientState(search, authenticatedUser, true);
+  const { activeTab, settingsTarget, user } = dashboardSession;
   const [settingsPanelInstance, setSettingsPanelInstance] = useState(0);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const avatarMenuRef = useRef<HTMLDivElement>(null);
   const [photoToEdit, setPhotoToEdit] = useState<HistoryRecord | null>(null);
+  const [pendingUpload, setPendingUpload] = useState<{
+    name: string;
+    sizeKB: number;
+    thumbnail: string;
+    blob: Blob;
+    format: string;
+  } | null>(null);
 
   const openPhotoInEditor = (item: HistoryRecord) => {
     setPhotoToEdit(item);
+    setPendingUpload(null);
+    changeTab("editor");
+  };
+
+  // Home dropzone: hand the dropped/picked file straight to the editor.
+  const handleSelectFile = (file: File) => {
+    setPhotoToEdit(null);
+    setPendingUpload({
+      name: file.name,
+      sizeKB: Math.round(file.size / 100) / 10,
+      thumbnail: URL.createObjectURL(file),
+      blob: file,
+      format: file.type === "image/png" ? "PNG" : "JPEG",
+    });
     changeTab("editor");
   };
 
@@ -65,6 +83,13 @@ export default function DashboardPage() {
       active = false;
     };
   }, [neonUserId]);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 4);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     if (!avatarMenuOpen) return;
@@ -99,11 +124,6 @@ export default function DashboardPage() {
     router.refresh();
   };
 
-  const dismissOnboarding = () => {
-    localStorage.setItem(ONBOARDED_KEY, "1");
-    window.dispatchEvent(new Event("dashboard-session-change"));
-  };
-
   if (!dashboardSession.isReady || !user) {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center p-6 font-sans">
@@ -126,15 +146,9 @@ export default function DashboardPage() {
   const isUnpaid = (user.plan ?? "Free") === "Free";
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#f6f8f7] pb-20 font-sans md:pb-0">
-      <div
-        aria-hidden="true"
-        className="fixed inset-0 bg-cover bg-center opacity-24 pointer-events-none"
-        style={{ backgroundImage: "url('/nature-bg.jpg')" }}
-      />
-      <div aria-hidden="true" className="fixed inset-0 bg-[#f6f8f7]/62 pointer-events-none" />
+    <div className="dashboard relative min-h-screen overflow-hidden bg-white pb-20 font-sans md:pb-0">
       {/* TOP NAVBAR */}
-      <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
+      <header className={`sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md transition-shadow duration-200 ${scrolled ? "shadow-[0_8px_24px_rgba(15,23,42,0.08)]" : ""}`}>
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           {/* Brand */}
           <Link href="/" className="flex items-center gap-2 shrink-0 hover:opacity-90 transition-opacity">
@@ -154,7 +168,7 @@ export default function DashboardPage() {
                 key={tab.key}
                 onClick={() => changeTab(tab.key)}
                 aria-pressed={activeTab === tab.key}
-                className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 whitespace-nowrap transition-colors duration-150 cursor-pointer ${
+                className={`inline-flex items-center gap-2 rounded-full px-3 py-2 whitespace-nowrap transition-colors duration-150 cursor-pointer ${
                   activeTab === tab.key
                     ? "bg-primary/10 text-primary-dark"
                     : "text-body hover:bg-slate-50 hover:text-heading"
@@ -189,13 +203,13 @@ export default function DashboardPage() {
               aria-expanded={avatarMenuOpen}
               aria-controls="account-menu"
               aria-label="Open account menu"
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-xs font-bold uppercase text-primary transition-[background-color,border-color,transform] duration-150 hover:border-primary/40 hover:bg-primary/15 active:scale-95"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-xs font-bold uppercase text-primary transition-[background-color,border-color,transform] duration-150 hover:border-primary/40 hover:bg-primary/15 active:scale-95"
             >
               {user.name.charAt(0)}
             </button>
 
             {avatarMenuOpen && (
-              <div id="account-menu" role="menu" aria-label="Account menu" className="absolute right-0 top-11 z-50 w-72 overflow-hidden rounded-xl border border-slate-200 bg-white p-2 shadow-[0_16px_40px_rgba(15,23,42,0.16)]">
+              <div id="account-menu" role="menu" aria-label="Account menu" className="absolute right-0 top-11 z-50 w-72 overflow-hidden rounded-[20px] bg-white p-2 shadow-[0_16px_40px_rgba(15,23,42,0.16)]">
                 <div className="flex items-center gap-3 px-3 py-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold uppercase text-primary">{user.name.charAt(0)}</div>
                   <div className="min-w-0"><p className="truncate text-sm font-semibold text-heading">{user.name}</p><p className="truncate text-xs text-muted">{user.email}</p></div>
@@ -219,24 +233,29 @@ export default function DashboardPage() {
       {/* MAIN CONTENT AREA */}
       <main id="main-content" className="relative z-10 mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
         {activeTab === "overview" && (
-          <OverviewPanel user={user} onStartEditor={() => changeTab("editor")} onOpenPhoto={openPhotoInEditor} />
+          <OverviewPanel user={user} onStartEditor={() => changeTab("editor")} onOpenPhoto={openPhotoInEditor} onSelectFile={handleSelectFile} />
         )}
         {activeTab === "editor" && (
           <EditorPanel
             user={user}
             initialPhoto={
-              photoToEdit ? { name: photoToEdit.name, sizeKB: photoToEdit.sizeKB, thumbnail: photoToEdit.thumbnail } : null
+              photoToEdit
+                ? { name: photoToEdit.name, sizeKB: photoToEdit.sizeKB, thumbnail: photoToEdit.thumbnail }
+                : pendingUpload
             }
-            onInitialPhotoConsumed={() => setPhotoToEdit(null)}
+            onInitialPhotoConsumed={() => {
+              setPhotoToEdit(null);
+              setPendingUpload(null);
+            }}
           />
         )}
-        {activeTab === "history" && <HistoryPanel onOpenPhoto={openPhotoInEditor} />}
+        {activeTab === "history" && <HistoryPanel onOpenPhoto={openPhotoInEditor} onStartEditor={() => changeTab("editor")} />}
         {activeTab === "settings" && <SettingsPanel key={`${settingsTarget ?? "default"}-${settingsPanelInstance}`} user={user} initialPanel={settingsTarget} onOpenSupport={openSupport} />}
       </main>
 
       <nav
         aria-label="Mobile dashboard navigation"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-md md:hidden"
+        className={`fixed inset-x-0 bottom-0 z-40 bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-md transition-shadow duration-200 md:hidden ${scrolled ? "shadow-[0_-8px_24px_rgba(15,23,42,0.08)]" : ""}`}
       >
         <div className="mx-auto grid max-w-md grid-cols-3">
           {TABS.map((tab) => (
@@ -255,31 +274,6 @@ export default function DashboardPage() {
           ))}
         </div>
       </nav>
-
-      {/* First-run onboarding */}
-      <Modal open={showOnboarding} onClose={dismissOnboarding} maxWidth="max-w-lg">
-        <span className="tag mb-2">Welcome</span>
-        <h3 className="font-sans text-2xl font-semibold text-heading mt-1 mb-4">
-          Let&apos;s get your ERAS photo ready
-        </h3>
-        <ol className="space-y-4 mb-6">
-          <li className="flex gap-3">
-            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">1</span>
-            <span className="text-sm text-body leading-relaxed">Upload a high-resolution headshot with a plain background.</span>
-          </li>
-          <li className="flex gap-3">
-            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">2</span>
-            <span className="text-sm text-body leading-relaxed">Crop to the guide and adjust brightness/warmth as needed.</span>
-          </li>
-          <li className="flex gap-3">
-            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">3</span>
-            <span className="text-sm text-body leading-relaxed">Download — sized and compressed to exact AAMC ERAS specs.</span>
-          </li>
-        </ol>
-        <button onClick={dismissOnboarding} className="w-full btn-primary">
-          Get started
-        </button>
-      </Modal>
 
       <SupportModal open={supportOpen} onClose={() => setSupportOpen(false)} user={user} />
     </div>

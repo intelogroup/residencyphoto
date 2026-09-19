@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { NewsletterForm } from "./NewsletterForm";
 
 export function Footer() {
   return (
@@ -8,7 +7,7 @@ export function Footer() {
 
         {/* Footer Top Grid */}
         <div className="grid md:grid-cols-4 gap-8">
-          {/* Logo and Privacy Tag */}
+          {/* Logo and Tagline */}
           <div className="md:col-span-2 space-y-3">
             <div className="flex items-center gap-2">
               <span className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-xs">R</span>
@@ -17,10 +16,6 @@ export function Footer() {
             <p className="font-sans text-sm text-muted leading-relaxed max-w-sm">
               A simple tool to resize and format your headshot for ERAS — no design skills needed.
             </p>
-            <span className="pill-success">Your photo never leaves your device</span>
-            <div className="pt-2">
-              <NewsletterForm />
-            </div>
           </div>
 
           {/* Quick Links */}

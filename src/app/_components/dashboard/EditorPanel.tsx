@@ -26,7 +26,7 @@ interface EditorPanelProps {
   // A previously-downloaded photo reopened from "My Photos" — loaded once on
   // mount, then reported back via onInitialPhotoConsumed so the parent can
   // clear it (otherwise switching tabs away and back would reload it again).
-  initialPhoto?: { name: string; sizeKB: number; thumbnail: string } | null;
+  initialPhoto?: { name: string; sizeKB: number; thumbnail: string; blob?: Blob; format?: string } | null;
   onInitialPhotoConsumed?: () => void;
 }
 
@@ -221,7 +221,16 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
   useEffect(() => {
     if (initialPhoto) {
       const timer = window.setTimeout(() => {
-        loadImageFromSrc(initialPhoto.thumbnail, initialPhoto.name, initialPhoto.sizeKB, "JPEG");
+        // A blob-backed handoff (Home dropzone) owns an object URL — track it
+        // so unmount revokes it, same as the fresh-upload path.
+        if (initialPhoto.blob) objectUrlRef.current = initialPhoto.thumbnail;
+        loadImageFromSrc(
+          initialPhoto.thumbnail,
+          initialPhoto.name,
+          initialPhoto.sizeKB,
+          initialPhoto.format ?? "JPEG",
+          initialPhoto.blob
+        );
         onInitialPhotoConsumed?.();
       }, 0);
       return () => window.clearTimeout(timer);

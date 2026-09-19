@@ -2,6 +2,7 @@ import Stripe from "stripe";
 import { activateApplicantPlan } from "@/db/applicant-profiles";
 import { applyStripeEvent } from "@/lib/stripe-webhook";
 import { captureServerEvent } from "@/lib/analytics-server";
+import { childLogger, getRequestId, logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -12,9 +13,13 @@ function getStripeClient(): Stripe {
 }
 
 export async function POST(request: Request) {
+  const requestId = getRequestId(request.headers);
+  const log = childLogger(logger, requestId);
+
   const signature = request.headers.get("stripe-signature");
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!signature || !webhookSecret) {
+    log.warn("Stripe webhook: verification is not configured");
     return Response.json({ error: "Webhook verification is not configured." }, { status: 400 });
   }
 
@@ -26,7 +31,7 @@ export async function POST(request: Request) {
       webhookSecret,
     );
   } catch (error) {
-    console.error("Unable to verify Stripe webhook signature", error);
+    log.warn({ err: error }, "Stripe webhook: invalid signature");
     return Response.json({ error: "Invalid webhook signature." }, { status: 400 });
   }
 
@@ -47,9 +52,10 @@ export async function POST(request: Request) {
           },
         }),
     });
+    log.info({ stripeEventId: event.id, eventType: event.type, result }, "Stripe webhook: handled");
     return Response.json({ received: true, result });
   } catch (error) {
-    console.error("Unable to persist Stripe webhook event", error);
+    log.error({ err: error, stripeEventId: event.id }, "Stripe webhook: processing failed");
     return Response.json({ error: "Webhook processing failed." }, { status: 500 });
   }
 }
