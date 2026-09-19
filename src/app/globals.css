@@ -15,6 +15,8 @@
   --color-error: #DC2626;
   --color-info: #0369A1;
   --color-ink: #0F172A;
+  --shadow-subtle: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-raised: 0 8px 24px rgba(15, 23, 42, 0.08);
 }
 
 @theme inline {
@@ -36,8 +38,6 @@
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-pill: 999px;
-  --shadow-subtle: 0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-raised: 0 8px 24px rgba(15, 23, 42, 0.08);
   --content-max: 72rem;
 }
 
@@ -219,12 +219,26 @@ main[id] {
 
 /* Animations */
 @keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in-up {
-  animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fade-in-up 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Dashboard radius + elevation system (Muse taste layer): pills, 20px cards,
+   separation by shadow instead of 1px borders. Scoped to the dashboard so
+   marketing/auth/checkout keep their current mix. */
+.dashboard .btn-primary,
+.dashboard .btn-ghost {
+  border-radius: 999px;
+}
+
+.dashboard .card {
+  border: 0;
+  border-radius: 20px;
+  box-shadow: var(--shadow-raised);
 }
 
 /* Design system primitives */
@@ -300,8 +314,9 @@ main[id] {
   *::before,
   *::after {
     animation: none;
+    /* Keep useful state feedback (toggle color, hover fades); kill motion. */
+    transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow;
     scroll-behavior: auto;
-    transition-duration: 0.01ms;
   }
 
 }
@@ -351,13 +366,7 @@ main[id] {
   opacity: 0.85;
 }
 
-/* Photo Polaroid Style thumbnail in history */
-.polaroid-frame {
-  background: white;
-  border: 1px solid var(--color-border);
-  padding: 8px 8px 24px 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
-}
+/* Photo thumbnail in history (populated grid) — see HistoryPanel.tsx */
 
 /* Medical Form grid pattern for Login background */
 .bg-grid-medical {

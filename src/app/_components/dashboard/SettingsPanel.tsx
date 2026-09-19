@@ -3,13 +3,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  ArrowUpCircle,
   CreditCard,
   Download,
   Images,
   KeyRound,
   MessageSquareText,
   ShieldAlert,
-  Sparkles,
   UserRound,
 } from "lucide-react";
 import { clearHistory, type EraUser } from "@/lib/eras-storage";
@@ -108,20 +108,19 @@ export function SettingsPanel({ user, initialPanel = null, onOpenSupport }: Sett
   };
 
   const isPaid = plan !== "Free";
-  const planPrice = plan === "Resident" ? "$4" : plan === "Program" ? "$19" : "—";
+  const planPrice = plan === "Resident" ? "$4" : plan === "Program" ? "$19" : "$4";
 
   return (
     <div className="mx-auto max-w-6xl animate-fade-in-up font-sans">
       <header className="mb-5">
         <p className="text-sm font-medium text-primary-dark">Account</p>
         <h1 className="mt-1 text-2xl font-semibold tracking-tight text-heading sm:text-3xl">Settings</h1>
-        <p className="mt-1.5 text-sm text-muted">Manage your account, privacy, and plan.</p>
       </header>
 
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="space-y-5">
-          <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <div className="border-b border-slate-200 px-5 py-4 sm:px-6">
+          <section className="overflow-hidden rounded-[20px] bg-white shadow-raised">
+            <div className="px-5 py-4 sm:px-6">
               <SectionTitle icon={UserRound} title="Account" description="Profile details and sign-in security." />
             </div>
             <div className="divide-y divide-slate-100">
@@ -149,8 +148,8 @@ export function SettingsPanel({ user, initialPanel = null, onOpenSupport }: Sett
             </div>
           </section>
 
-          <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <div className="border-b border-slate-200 px-5 py-4 sm:px-6">
+          <section className="overflow-hidden rounded-[20px] bg-white shadow-raised">
+            <div className="px-5 py-4 sm:px-6">
               <SectionTitle icon={Images} title="Privacy" description="Control what this browser keeps." />
             </div>
             <label className="flex cursor-pointer items-start justify-between gap-5 px-5 py-5 transition-colors hover:bg-slate-50 sm:px-6">
@@ -182,53 +181,45 @@ export function SettingsPanel({ user, initialPanel = null, onOpenSupport }: Sett
         </div>
 
         <aside className="space-y-5 lg:sticky lg:top-21">
-          <section ref={planCardRef} className={`overflow-hidden rounded-xl border bg-white transition-shadow ${billingHighlight ? "border-primary/60 ring-2 ring-primary/30" : "border-primary/20"}`}>
+          <section ref={planCardRef} className={`overflow-hidden rounded-[20px] bg-white shadow-raised ${billingHighlight ? "ring-2 ring-primary/30" : ""}`}>
             <div className="bg-primary/[0.07] px-5 py-5">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2 text-primary-dark">
-                  <CreditCard aria-hidden={true} className="h-4 w-4" />
-                  <p className="text-xs font-bold uppercase tracking-[0.12em]">Plan & Billing</p>
-                </div>
-                <span className="pill-success">Current</span>
+              <div className="flex items-center gap-2 text-primary-dark">
+                <CreditCard aria-hidden={true} className="h-4 w-4" />
+                <p className="text-xs font-bold uppercase tracking-[0.12em]">Plan & Billing</p>
               </div>
               <div className="mt-5 flex items-end justify-between gap-4">
                 <div>
                   <p className="text-lg font-semibold text-heading">{isPaid ? `${plan} Plan` : "Preview Access"}</p>
-                  <p className="mt-0.5 text-xs text-muted">{isPaid ? "One-time purchase" : "Upgrade to download — $4"}</p>
+                  <p className="mt-0.5 text-xs text-muted">
+                    {isPaid ? "One-time purchase" : "One-time purchase · downloads unlock after checkout"}
+                  </p>
                 </div>
                 <p className="text-2xl font-semibold tabular-nums text-heading">{planPrice}</p>
               </div>
             </div>
-            <dl className="divide-y divide-slate-100 px-5 text-sm">
-              <div className="flex justify-between gap-3 py-3.5"><dt className="text-muted">Downloads</dt><dd className="font-semibold text-heading">{isPaid ? "Unlimited" : "Available after $4 unlock"}</dd></div>
-              <div className="flex justify-between gap-3 py-3.5"><dt className="text-muted">Next charge</dt><dd className="font-semibold text-heading">$0</dd></div>
-            </dl>
-            <div className="border-t border-slate-100 p-4">
-              {!isPaid && (
-                <button type="button" onClick={handleUpgrade} className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#c9df67] bg-[#f1facb] px-4 py-2.5 text-sm font-semibold text-heading shadow-sm transition-[background-color,border-color,box-shadow] hover:border-[#b8d34d] hover:bg-[#e8f7aa] hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
-                  <Sparkles aria-hidden={true} className="h-4 w-4 text-primary-dark" />
+            {!isPaid && (
+              <div className="p-4">
+                <button type="button" onClick={handleUpgrade} className="btn-primary w-full gap-2 px-4 py-2.5 text-sm">
+                  <ArrowUpCircle aria-hidden={true} className="h-4 w-4" />
                   Unlock Downloads
-                  <span className="rounded-full bg-white/80 px-1.5 py-0.5 text-[10px] font-bold tabular-nums ring-1 ring-black/5">$4</span>
+                  <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-white ring-1 ring-white/30">$4</span>
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </section>
 
-          <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <section className="overflow-hidden rounded-[20px] bg-white shadow-raised">
             <div className="px-5 py-4">
               <SectionTitle icon={MessageSquareText} title="Help & Feedback" description="Questions, problems, or product suggestions." />
             </div>
-            <div className="border-t border-slate-100 p-4">
+            <div className="p-4">
               <button type="button" onClick={onOpenSupport} className="btn-ghost w-full px-4 py-2.5 text-sm">
                 Contact Support
               </button>
-              <a href="mailto:support@residencyphoto.com" className="mt-2 block text-center text-xs font-medium text-primary-dark hover:text-primary">
-                support@residencyphoto.com
-              </a>
             </div>
           </section>
 
-          <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <section className="overflow-hidden rounded-[20px] bg-white shadow-raised">
             <div className="px-5 py-4">
               <SectionTitle icon={ShieldAlert} title="Data & Account" description="Export or permanently delete your data." />
             </div>

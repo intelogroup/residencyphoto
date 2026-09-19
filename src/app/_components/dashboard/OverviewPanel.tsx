@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState } from "react";
-import { ArrowRight, Check, Edit3, ImagePlus } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { ArrowRight, Check, ImagePlus } from "lucide-react";
 import { buildDashboardOverview } from "@/lib/dashboard-overview";
 import { getHistory, type HistoryRecord } from "@/lib/eras-storage";
 
@@ -10,65 +10,125 @@ interface OverviewProps {
   user: { email: string; name: string; plan?: "Free" | "Resident" | "Program" };
   onStartEditor: () => void;
   onOpenPhoto: (item: HistoryRecord) => void;
+  onSelectFile: (file: File) => void;
 }
 
-export function OverviewPanel({ onStartEditor, onOpenPhoto }: OverviewProps) {
+const ACCEPT = "image/jpeg,image/png,image/heic,image/heif";
+
+export function OverviewPanel({ onStartEditor, onOpenPhoto, onSelectFile }: OverviewProps) {
   const [history] = useState(() => (typeof window === "undefined" ? [] : getHistory()));
   const overview = buildDashboardOverview(history, new Date());
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
+
+  const openPicker = () => inputRef.current?.click();
+
+  const handleFiles = (files: FileList | null | undefined) => {
+    const file = files?.[0];
+    if (file) onSelectFile(file);
+  };
+
+  const handleDrop = (event: React.DragEvent) => {
+    event.preventDefault();
+    setDragging(false);
+    handleFiles(event.dataTransfer.files);
+  };
 
   return (
-    <div className="space-y-5 animate-fade-in-up font-sans">
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-subtle">
-        <div className="grid lg:grid-cols-[minmax(0,1.2fr)_20rem]">
-          <div className="flex flex-col justify-center p-5 sm:p-7">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              {overview.hasPhotos ? <Edit3 aria-hidden={true} className="h-5 w-5" /> : <ImagePlus aria-hidden={true} className="h-5 w-5" />}
-            </div>
-            <h2 className="mt-5 text-xl font-semibold tracking-tight text-heading sm:text-2xl">
-              {overview.hasPhotos ? "Continue with your latest photo" : "Start with a clear headshot"}
-            </h2>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-body">
-              {overview.hasPhotos
-                ? "Reopen your latest file to refine the crop, review its checks, or export another copy."
-                : "Upload a photo and the editor will guide the crop, file size, resolution, framing, and background checks."}
+    <div className="mx-auto flex min-h-[calc(100vh-14rem)] w-full max-w-3xl flex-col justify-center animate-fade-in-up font-sans">
+      {overview.hasPhotos && overview.latestPhoto ? (
+        <section className="rounded-[20px] bg-white p-6 shadow-raised sm:p-10">
+          <div className="flex flex-col items-center text-center">
+            <button
+              type="button"
+              onClick={() => onOpenPhoto(overview.latestPhoto!)}
+              className="group relative block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4 rounded-2xl"
+              aria-label={`Continue editing ${overview.latestPhoto.name}`}
+            >
+              <Image
+                src={overview.latestPhoto.thumbnail}
+                alt={`Latest ERAS photo: ${overview.latestPhoto.name}`}
+                width={180}
+                height={252}
+                unoptimized
+                className="aspect-[5/7] h-auto w-40 rounded-2xl object-cover shadow-raised transition-transform duration-200 group-hover:scale-[1.03]"
+              />
+              <span className="pill-success absolute bottom-3 right-3">
+                <Check aria-hidden={true} className="h-3 w-3" />
+                Ready
+              </span>
+            </button>
+            <p className="mt-4 text-xs text-muted">
+              {overview.latestPhoto.name} · {overview.latestPhoto.sizeKB} KB
             </p>
-            <div className="mt-5 flex flex-wrap gap-3">
+            <h2 className="mt-3 text-xl font-semibold tracking-tight text-heading sm:text-2xl">
+              Continue with your latest photo
+            </h2>
+            <p className="mt-2 max-w-md text-sm leading-6 text-body">
+              Reopen your latest file to refine the crop, review its checks, or export another copy.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
               <button
                 type="button"
-                onClick={overview.latestPhoto ? () => onOpenPhoto(overview.latestPhoto!) : onStartEditor}
-                className="btn-primary gap-2 px-5 py-2.5 text-sm"
+                onClick={() => onOpenPhoto(overview.latestPhoto!)}
+                className="btn-primary gap-2 px-6 py-2.5 text-sm"
               >
-                {overview.hasPhotos ? "Continue Editing" : "Upload Photo"}
+                Continue Editing
                 <ArrowRight aria-hidden={true} className="h-4 w-4" />
               </button>
-              {overview.hasPhotos && (
-                <button type="button" onClick={onStartEditor} className="btn-ghost px-5 py-2.5 text-sm">
-                  Create New
-                </button>
-              )}
+              <button type="button" onClick={onStartEditor} className="btn-ghost px-6 py-2.5 text-sm">
+                Create New
+              </button>
             </div>
           </div>
-
-          <div className="border-t border-slate-200 bg-slate-50 p-5 sm:p-6 lg:border-l lg:border-t-0">
-            {overview.latestPhoto ? (
-              <button type="button" onClick={() => onOpenPhoto(overview.latestPhoto!)} className="group mx-auto block w-full max-w-48 text-left">
-                <div className="relative overflow-hidden rounded-lg border border-slate-200 bg-white p-2 shadow-sm">
-                  <Image src={overview.latestPhoto.thumbnail} alt={`Latest ERAS photo: ${overview.latestPhoto.name}`} width={180} height={252} unoptimized className="aspect-[5/7] h-auto w-full rounded-md object-cover" />
-                  <span className="absolute bottom-4 right-4 inline-flex items-center gap-1 rounded-md bg-[#dfff6a] px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-heading"><Check aria-hidden={true} className="h-3 w-3" />Ready</span>
-                </div>
-                <p className="mt-3 truncate text-sm font-semibold text-heading group-hover:text-primary">{overview.latestPhoto.name}</p>
-                <p className="mt-1 text-xs text-muted">{overview.latestPhoto.sizeKB} KB · Latest saved photo</p>
-              </button>
-            ) : (
-              <div className="flex h-full min-h-56 flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white px-5 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary"><ImagePlus aria-hidden={true} className="h-5 w-5" /></div>
-                <p className="mt-4 text-sm font-semibold text-heading">Your photo preview appears here</p>
-                <p className="mt-1.5 text-xs leading-5 text-muted">5:7 crop · 375 × 525 px · under 150 KB</p>
-              </div>
-            )}
+        </section>
+      ) : (
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label="Upload a photo to start. You can also drag and drop an image file here."
+          onClick={openPicker}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              openPicker();
+            }
+          }}
+          onDragOver={(event) => {
+            event.preventDefault();
+            setDragging(true);
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={handleDrop}
+          className={`flex min-h-80 cursor-pointer flex-col items-center justify-center rounded-[20px] border-2 border-dashed bg-white px-6 py-14 text-center shadow-raised transition-[border-color,background-color,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+            dragging ? "scale-[1.01] border-primary bg-primary/[0.04]" : "border-slate-300 hover:border-primary/60"
+          }`}
+        >
+          <input
+            ref={inputRef}
+            type="file"
+            accept={ACCEPT}
+            className="sr-only"
+            tabIndex={-1}
+            aria-hidden={true}
+            onChange={(event) => {
+              handleFiles(event.target.files);
+              event.target.value = "";
+            }}
+          />
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <ImagePlus aria-hidden={true} className="h-6 w-6" />
           </div>
+          <h2 className="mt-5 text-xl font-semibold tracking-tight text-heading sm:text-2xl">
+            Drop a photo to start
+          </h2>
+          <p className="mt-2 text-sm text-muted">5:7 crop · 375 × 525 px · under 150 KB</p>
+          <span className="btn-primary mt-6 gap-2 px-6 py-2.5 text-sm" aria-hidden={true}>
+            Choose a photo
+            <ArrowRight aria-hidden={true} className="h-4 w-4" />
+          </span>
         </div>
-      </section>
+      )}
     </div>
   );
 }
