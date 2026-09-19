@@ -79,6 +79,24 @@ export function mapSignInError(error: unknown): SignInError {
   return new SignInError("unknown", MESSAGES.unknown);
 }
 
+/**
+ * Build the callbackURL for a social (OAuth) sign-in.
+ *
+ * Must be absolute. Neon Auth runs on its own origin
+ * (*.neonauth.<region>.aws.neon.tech), and better-auth's OAuth callback ends in
+ * `redirect(callbackURL)` with the raw string — so a relative "/dashboard" is
+ * resolved by the browser against the *auth* origin and lands on a page that
+ * doesn't exist there, leaving the user stranded after picking their account.
+ *
+ * Routed through the vendor's own callback view rather than straight to the
+ * destination, matching how AuthView builds every other social/magic-link
+ * callback (`${baseURL}${basePath}/callback?redirectTo=…`), so the session is
+ * persisted the same way before any protected route's middleware check.
+ */
+export function buildSocialCallbackURL(origin: string, redirectTo: string): string {
+  return `${origin.replace(/\/$/, "")}/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}`;
+}
+
 interface EmailSignInClient {
   signIn: {
     email: (

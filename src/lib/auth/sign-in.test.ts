@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  buildSocialCallbackURL,
   mapSignInError,
   performEmailSignIn,
   SIGN_IN_TIMEOUT_MS,
@@ -117,5 +118,40 @@ describe("performEmailSignIn", () => {
     ).rejects.toMatchObject({ kind: "timeout" });
     // Must not wait anywhere near the default 15s.
     expect(Date.now() - start).toBeLessThan(SIGN_IN_TIMEOUT_MS);
+  });
+});
+
+describe("buildSocialCallbackURL", () => {
+  const NEON_AUTH_ORIGIN = "https://ep-spring-block.neonauth.c-9.us-east-1.aws.neon.tech";
+
+  it("is absolute, so the browser resolves it against the app and not the auth origin", () => {
+    const url = buildSocialCallbackURL("https://residencyphoto.com", "/dashboard");
+    // The bug this guards: a relative callbackURL reaches better-auth's OAuth
+    // callback as a raw `redirect("/dashboard")`, which the browser resolves
+    // against whatever origin answered — Neon Auth's, not ours.
+    expect(new URL(url, NEON_AUTH_ORIGIN).origin).toBe("https://residencyphoto.com");
+  });
+
+  it("routes through the vendor callback view, carrying the destination", () => {
+    const url = new URL(buildSocialCallbackURL("https://residencyphoto.com", "/dashboard"));
+    expect(url.pathname).toBe("/auth/callback");
+    expect(url.searchParams.get("redirectTo")).toBe("/dashboard");
+  });
+
+  it("keeps preview and localhost origins intact", () => {
+    for (const origin of ["https://residencyphoto-git-x.vercel.app", "http://localhost:3000"]) {
+      expect(new URL(buildSocialCallbackURL(origin, "/dashboard")).origin).toBe(origin);
+    }
+  });
+
+  it("does not double up the slash when the origin has a trailing one", () => {
+    expect(buildSocialCallbackURL("https://residencyphoto.com/", "/dashboard")).toContain(
+      "https://residencyphoto.com/auth/callback",
+    );
+  });
+
+  it("encodes the destination so a query in it survives the round trip", () => {
+    const url = new URL(buildSocialCallbackURL("https://residencyphoto.com", "/dashboard?tab=editor"));
+    expect(url.searchParams.get("redirectTo")).toBe("/dashboard?tab=editor");
   });
 });

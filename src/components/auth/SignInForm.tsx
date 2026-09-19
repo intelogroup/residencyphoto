@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
 import { useToast } from "@/components/Toast";
-import { performEmailSignIn, SignInError } from "@/lib/auth/sign-in";
+import { buildSocialCallbackURL, performEmailSignIn, SignInError } from "@/lib/auth/sign-in";
 
 /**
  * Custom sign-in form replacing the vendor AuthView for /auth/sign-in.
@@ -51,7 +51,13 @@ export function SignInForm() {
     if (isLoading) return;
     setError(null);
     try {
-      await authClient.signIn.social({ provider: "google", callbackURL: "/dashboard" });
+      // window.location.origin, not a hardcoded host: keeps preview and
+      // localhost builds working. Neon's trusted origins already cover
+      // residencyphoto.com, www, and *.vercel.app.
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: buildSocialCallbackURL(window.location.origin, "/dashboard"),
+      });
     } catch {
       const message = "Couldn't start Google sign-in. Please try again.";
       setError(message);
