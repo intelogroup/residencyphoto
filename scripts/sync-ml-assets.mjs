@@ -14,14 +14,6 @@ const clipFiles = [
   "merges.txt",
   "onnx/text_model_quantized.onnx",
   "onnx/vision_model_quantized.onnx",
-  // q4f16 variant: kept alongside the default "quantized" (q8) files, not
-  // in place of them, so trying it is a one-line dtype change in
-  // ml-assets.ts with an easy rollback. Plain "q4" was measured LARGER than
-  // q8 for this model's text tower (its block-quantization overhead beats
-  // the precision savings here) — q4f16 is the tier that's actually
-  // smaller (~126MB vs ~154MB combined), so that's the one worth pulling.
-  "onnx/text_model_q4f16.onnx",
-  "onnx/vision_model_q4f16.onnx",
   "preprocessor_config.json",
   "special_tokens_map.json",
   "tokenizer.json",
