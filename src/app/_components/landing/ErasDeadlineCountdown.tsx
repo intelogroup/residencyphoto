@@ -39,15 +39,17 @@ export function ErasDeadlineCountdown() {
   const showTimer = state.phase !== "review-open" && now !== null;
 
   return (
-    <div className="bg-primary-dark text-white">
-      <p className="mx-auto flex max-w-6xl items-center justify-center gap-2 px-6 py-2 text-center font-sans text-sm">
-        <span className="font-semibold">{message}</span>
-        {showTimer && (
-          <span className="tabular-nums text-white/80">
-            · {countdown.days}d {countdown.hours}h {countdown.minutes}m
-          </span>
-        )}
-      </p>
+    <div className="flex justify-center px-4 pt-4">
+      <div className="w-fit max-w-full rounded-2xl bg-primary-dark px-5 py-2 text-white shadow-sm">
+        <p className="flex items-center justify-center gap-2 text-center font-sans text-sm">
+          <span className="font-semibold">{message}</span>
+          {showTimer && (
+            <span className="tabular-nums text-white/80">
+              · {countdown.days}d {countdown.hours}h {countdown.minutes}m
+            </span>
+          )}
+        </p>
+      </div>
     </div>
   );
 }
