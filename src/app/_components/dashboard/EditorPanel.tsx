@@ -85,6 +85,8 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
     attireWarning,
     framingWarning,
     poseWarning,
+    landmarkerWarning,
+    classifierWarning,
     runUploadChecks,
     reset: resetDetectors,
   } = useEraDetectors({ canvasRef, image, zoom, rotation, position, imageSrc });
@@ -691,6 +693,8 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
           attireWarning={attireWarning}
           framingWarning={framingWarning}
           poseWarning={poseWarning}
+          landmarkerWarning={landmarkerWarning}
+          classifierWarning={classifierWarning}
           sizeWarning={sizeWarning}
         />
       </div>
