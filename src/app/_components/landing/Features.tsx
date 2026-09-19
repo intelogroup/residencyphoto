@@ -1,4 +1,4 @@
-import { Check, FileCheck2, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { Check } from "lucide-react";
 
 const CHECKLIST_SPECS = [
   { spec: "Width", target: "2.5 inches" },
@@ -7,24 +7,6 @@ const CHECKLIST_SPECS = [
   { spec: "File size", target: "Under 150 KB" },
   { spec: "Format", target: "JPEG or PNG" },
   { spec: "Privacy", target: "Stays on your device" },
-];
-
-const WHY_IT_WORKS = [
-  {
-    title: "No Photoshop Needed",
-    text: "Zoom and position until it says Ready.",
-    icon: SlidersHorizontal,
-  },
-  {
-    title: "Nothing Uploaded",
-    text: "Everything happens in your browser — your photo never touches a server.",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Built to the Real Spec",
-    text: "Dimensions, resolution, and file size checked against the ERAS spec.",
-    icon: FileCheck2,
-  },
 ];
 
 export function Features() {
@@ -36,18 +18,12 @@ export function Features() {
           <h2 className="mt-4 text-balance font-sans text-3xl font-bold leading-tight text-heading md:text-4xl">
             Every ERAS Photo Requirement, Checked Automatically
           </h2>
-          <p className="mt-4 text-pretty font-sans text-sm leading-6 text-body md:text-base">
-            You don&apos;t need to understand DPI, dimensions, or compression. We handle the technical details.
-          </p>
         </div>
 
-        <div className="mt-10 grid overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-subtle lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)]">
+        <div className="mx-auto mt-10 max-w-3xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-subtle">
           <div className="p-5 sm:p-7 lg:p-8">
             <div className="flex items-end justify-between gap-4 border-b border-slate-200 pb-5">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary-dark">ERAS-ready output</p>
-                <h3 className="mt-1.5 text-xl font-semibold tracking-tight text-heading">6 checks, one finished file</h3>
-              </div>
+              <h3 className="text-xl font-semibold tracking-tight text-heading">6 checks, one finished file</h3>
               <div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:flex">
                 <Check aria-hidden="true" className="h-5 w-5" />
               </div>
@@ -70,25 +46,6 @@ export function Features() {
               ))}
             </dl>
           </div>
-
-          <aside className="border-t border-slate-200 bg-slate-50 p-5 sm:p-7 lg:border-l lg:border-t-0 lg:p-8">
-            <span className="tag">Why People Trust It</span>
-            <h3 className="mt-4 text-2xl font-bold tracking-tight text-heading">Built to Just Work</h3>
-
-            <div className="mt-6 divide-y divide-slate-200">
-              {WHY_IT_WORKS.map((item) => (
-                <div key={item.title} className="flex gap-4 py-5 first:pt-0 last:pb-0">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-primary shadow-sm ring-1 ring-slate-200">
-                    <item.icon aria-hidden="true" className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <h4 className="text-sm font-semibold text-heading">{item.title}</h4>
-                    <p className="mt-1 text-sm leading-6 text-body">{item.text}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </aside>
         </div>
       </div>
     </section>

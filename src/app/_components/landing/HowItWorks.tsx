@@ -6,19 +6,19 @@ import { useState, useEffect } from "react";
 const STEPS_DATA = [
   {
     title: "Upload your photo",
-    body: "From your computer or phone. JPEG, PNG, and HEIC all work.",
+    body: "From your computer or phone.",
   },
   {
     title: "Center it",
-    body: "Framed automatically, so your face sits exactly where ERAS expects it.",
+    body: "Auto-framed, exactly where ERAS expects it.",
   },
   {
     title: "Fine-tune the size",
-    body: "Scaled to 2.5 × 3.5 in at 150 DPI, under the 150 KB limit — automatically.",
+    body: "Handled automatically.",
   },
   {
     title: "Download",
-    body: "Saved straight to your device. Nothing is ever stored on a server.",
+    body: "Saved straight to your device.",
   },
 ];
 
@@ -105,10 +105,6 @@ export function HowItWorks() {
                 </div>
                 <div className="space-y-2">
                   <h4 className="font-sans text-sm font-semibold text-heading">Perfectly framed</h4>
-                  <p className="text-sm text-muted leading-relaxed">
-                    Eyes and shoulders lined up, right where they should be.
-                  </p>
-                  <span className="pill-success">Nicely centered</span>
                 </div>
               </div>
             )}
@@ -138,9 +134,6 @@ export function HowItWorks() {
                   </svg>
                 </div>
                 <h4 className="text-heading text-sm font-semibold">All set</h4>
-                <p className="text-sm text-muted max-w-xs mx-auto">
-                  Matches every ERAS requirement.
-                </p>
               </div>
             )}
           </div>
