@@ -25,6 +25,21 @@ export const metadata: Metadata = {
     url: "/",
     siteName: "ResidencyPhoto",
     type: "website",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "ResidencyPhoto — Your residency headshot, done right",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ResidencyPhoto — Your residency headshot, done right",
+    description:
+      "Resize and compress your photo to exact AAMC ERAS specifications. One upload, one download.",
+    images: ["/og-image.jpg"],
   },
 };
 

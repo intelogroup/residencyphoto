@@ -1,10 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import fs from "node:fs";
+import path from "node:path";
 import { getAllPosts, getPost, getPostSlugs, siteUrl } from "@/lib/blog";
 
 export async function generateStaticParams(): Promise<{ slug: string }[]> {
   return getPostSlugs().map((slug) => ({ slug }));
+}
+
+function postOgImage(slug: string): string {
+  const candidate = `/og-image-${slug}.jpg`;
+  if (fs.existsSync(path.join(process.cwd(), "public", candidate.slice(1)))) return candidate;
+  return "/og-image.jpg";
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -12,6 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const post = getPost(slug);
   if (!post) return {};
   const url = `/blog/${post.slug}`;
+  const ogImage = postOgImage(post.slug);
   return {
     title: `${post.title} — ResidencyPhoto`,
     description: post.description,
@@ -23,6 +32,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       siteName: "ResidencyPhoto",
       type: "article",
       publishedTime: new Date(`${post.date}T12:00:00Z`).toISOString(),
+      images: [{ url: ogImage, width: 1200, height: 630, alt: post.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.description,
+      images: [ogImage],
     },
   };
 }
@@ -43,13 +59,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   const base = siteUrl();
   const canonical = `${base}/blog/${post.slug}`;
+  const ogImage = `${base}${postOgImage(post.slug)}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: post.title,
     description: post.description,
+    image: ogImage,
     datePublished: post.date,
-    author: { "@type": "Organization", name: "ResidencyPhoto" },
+    author: { "@type": "Organization", name: "ResidencyPhoto", url: base },
     publisher: { "@type": "Organization", name: "ResidencyPhoto" },
     mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
   };
