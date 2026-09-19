@@ -13,6 +13,7 @@ interface SpecCardProps {
   resolutionWarning: string | null;
   ratioWarning: string | null;
   bgWarning: string | null;
+  topEdgeWarning: string | null;
   faceWarning: string | null;
   eyewearWarning: string | null;
   attireWarning: string | null;
@@ -21,7 +22,7 @@ interface SpecCardProps {
   sizeWarning: string | null;
 }
 
-const WARNING_ORDER = ["resolutionWarning", "ratioWarning", "faceWarning", "poseWarning", "framingWarning", "eyewearWarning", "bgWarning", "attireWarning"] as const;
+const WARNING_ORDER = ["resolutionWarning", "ratioWarning", "faceWarning", "poseWarning", "framingWarning", "topEdgeWarning", "eyewearWarning", "bgWarning", "attireWarning"] as const;
 
 export function SpecCard(props: SpecCardProps) {
   const { imageSrc, exportKB, isProcessing, onDownload, onReset, sizeWarning, downloadLocked } = props;

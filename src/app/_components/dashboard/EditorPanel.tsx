@@ -7,6 +7,7 @@ import {
   computeResolutionWarning,
   computeRatioWarning,
   computeBackgroundWarning,
+  computeTopEdgeWarning,
   compressToTarget,
   setJpegDpi,
   clampPositionToCover,
@@ -65,6 +66,7 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
   const [resolutionWarning, setResolutionWarning] = useState<string | null>(null);
   const [ratioWarning, setRatioWarning] = useState<string | null>(null);
   const [bgWarning, setBgWarning] = useState<string | null>(null);
+  const [topEdgeWarning, setTopEdgeWarning] = useState<string | null>(null);
   const [sizeWarning, setSizeWarning] = useState<string | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
@@ -337,6 +339,12 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
       const topLeft = ctx.getImageData(0, 0, corner, corner).data;
       const topRight = ctx.getImageData(375 - corner, 0, corner, corner).data;
       setBgWarning(computeBackgroundWarning(topLeft, topRight));
+
+      // A thin strip across the top-center of the frame, between the two
+      // corners already sampled above — if a head/hair with no margin left
+      // is crowding the top edge, this strip won't match the corner background.
+      const topCenter = ctx.getImageData(corner, 0, 375 - corner * 2, 4).data;
+      setTopEdgeWarning(computeTopEdgeWarning(topCenter, topLeft, topRight));
     } catch (err) {
       console.error("Background check failed", err);
     }
@@ -503,6 +511,7 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
     setResolutionWarning(null);
     setRatioWarning(null);
     setBgWarning(null);
+    setTopEdgeWarning(null);
     setSizeWarning(null);
     setExportKB(null);
     resetDetectors();
@@ -676,6 +685,7 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
           resolutionWarning={resolutionWarning}
           ratioWarning={ratioWarning}
           bgWarning={bgWarning}
+          topEdgeWarning={topEdgeWarning}
           faceWarning={faceWarning}
           eyewearWarning={eyewearWarning}
           attireWarning={attireWarning}
