@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Crop, Eye, EyeOff, RotateCcw, SlidersHorizontal, Upload } from "lucide-react";
+import { Crop, RotateCcw, SlidersHorizontal, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   computeResolutionWarning,
@@ -573,7 +573,7 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
                     : "Click and drag the photo to reposition it"}
                 </span>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                 <input
                   ref={uploadInputRef}
                   type="file"
@@ -586,35 +586,42 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
                 <button
                   type="button"
                   onClick={() => uploadInputRef.current?.click()}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-heading px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 active:scale-[0.97]"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-heading shadow-sm transition hover:border-primary hover:text-primary active:scale-[0.97]"
                 >
                   <Upload aria-hidden={true} className="h-3.5 w-3.5" />
                   Upload New
                 </button>
-                <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 p-1">
+                <span aria-hidden="true" className="hidden h-5 w-px bg-slate-200 sm:block" />
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
+                    role="switch"
+                    aria-checked={showGuide}
                     onClick={() => setShowGuide(!showGuide)}
-                    aria-pressed={showGuide}
-                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition ${
-                      showGuide
-                        ? "bg-white text-heading shadow-sm border border-slate-200"
-                        : "text-slate-500 hover:text-heading"
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full p-0.5 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                      showGuide ? "bg-primary" : "bg-slate-300"
                     }`}
+                    aria-label="Toggle composition guide overlay"
                   >
-                    {showGuide ? <Eye aria-hidden={true} className="h-3.5 w-3.5" /> : <EyeOff aria-hidden={true} className="h-3.5 w-3.5" />}
-                    {showGuide ? "Guide On" : "Guide Off"}
+                    <span
+                      aria-hidden="true"
+                      className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                        showGuide ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
                   </button>
-                  <span aria-hidden="true" className="h-4 w-px bg-slate-200" />
-                  <button
-                    type="button"
-                    onClick={handleResetCrop}
-                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-slate-500 transition hover:text-heading"
-                  >
-                    <RotateCcw aria-hidden={true} className="h-3.5 w-3.5" />
-                    Reset Crop
-                  </button>
+                  <span className="text-xs font-medium text-muted">
+                    Guide
+                  </span>
                 </div>
+                <button
+                  type="button"
+                  onClick={handleResetCrop}
+                  className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium text-slate-400 transition hover:bg-red-50 hover:text-red-600 active:scale-[0.97]"
+                >
+                  <RotateCcw aria-hidden={true} className="h-3.5 w-3.5" />
+                  Reset Crop
+                </button>
               </div>
             </div>
 

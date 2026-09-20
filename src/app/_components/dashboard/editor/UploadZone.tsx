@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { FileImage, LockKeyhole, ShieldCheck, Upload } from "lucide-react";
 
 interface UploadZoneProps {
@@ -10,6 +11,7 @@ interface UploadZoneProps {
 const REQUIREMENTS = ["JPG, PNG, HEIC, or HEIF", "Portrait orientation", "Plain, light background"];
 
 export function UploadZone({ onFileChange, onDrop }: UploadZoneProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
   return (
     <section className="card relative overflow-hidden bg-white p-5 sm:p-8">
       <div aria-hidden="true" className="absolute -right-16 -top-16 h-52 w-52 rounded-full bg-primary/10 blur-3xl" />
@@ -28,15 +30,16 @@ export function UploadZone({ onFileChange, onDrop }: UploadZoneProps) {
         <div
           onDragOver={(event) => event.preventDefault()}
           onDrop={onDrop}
+          onClick={() => inputRef.current?.click()}
           className="group mt-6 flex min-h-[310px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50/70 px-6 py-10 text-center transition-[border-color,background-color,box-shadow] duration-150 hover:border-primary hover:bg-primary/5 focus-within:border-primary focus-within:bg-primary/5 focus-within:ring-4 focus-within:ring-primary/10"
         >
-          <input type="file" id="file-upload" name="photo" accept="image/jpeg,image/png,image/heic,image/heif" className="sr-only" onChange={onFileChange} aria-describedby="file-upload-help" />
-          <label htmlFor="file-upload" className="flex w-full cursor-pointer flex-col items-center justify-center">
+          <input ref={inputRef} type="file" id="file-upload" name="photo" accept="image/jpeg,image/png,image/heic,image/heif" className="sr-only" onChange={onFileChange} aria-describedby="file-upload-help" />
+          <div className="flex w-full flex-col items-center justify-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full border border-slate-200 bg-white text-primary shadow-sm transition-transform duration-150 group-hover:-translate-y-0.5"><Upload aria-hidden={true} className="h-6 w-6" /></div>
             <span className="mt-5 text-base font-semibold text-heading">Upload a Headshot</span>
             <span id="file-upload-help" className="mt-2 max-w-sm text-sm leading-6 text-muted">Drag a photo here or choose one from your device.</span>
-            <span className="mt-5 inline-flex rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors duration-150 group-hover:bg-primary-dark">Choose Photo</span>
-          </label>
+            <button type="button" onClick={(e) => { e.stopPropagation(); inputRef.current?.click(); }} className="mt-5 inline-flex rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-primary-dark active:scale-[0.98]">Choose Photo</button>
+          </div>
         </div>
 
         <ul className="mt-5 grid gap-2 text-xs text-muted sm:grid-cols-3">
