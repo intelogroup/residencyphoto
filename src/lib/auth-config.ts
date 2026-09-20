@@ -9,6 +9,12 @@ export function getNeonAuthConfig(env: Record<string, string | undefined>) {
 
   return {
     baseUrl,
-    cookies: { secret },
+    cookies: {
+      secret,
+      // Safari's ITP drops SameSite=strict cookies on the cross-site OAuth
+      // return trip (residencyphoto.com -> neonauth -> google -> back).
+      // "lax" allows the session cookie to survive top-level navigations.
+      sameSite: "lax" as const,
+    },
   };
 }

@@ -10,7 +10,7 @@ describe("Neon Auth configuration", () => {
       }),
     ).toEqual({
       baseUrl: "https://example.neonauth.aws.neon.tech/neondb/auth",
-      cookies: { secret: "a".repeat(32) },
+      cookies: { secret: "a".repeat(32), sameSite: "lax" },
     });
   });
 
