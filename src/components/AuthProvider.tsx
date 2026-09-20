@@ -3,31 +3,24 @@
 import { NeonAuthUIProvider } from "@neondatabase/auth-ui";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSyncExternalStore, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { authClient } from "@/lib/auth/client";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
-  // Absolute origin so the vendor AuthView builds absolute OAuth callbackURLs
-  // (Neon requires a trusted domain in production). Resolved via
-  // useSyncExternalStore, not by reading `window` during render: `window`
-  // doesn't exist when Next.js prerenders pages on the server, and reading it
-  // there crashes the production build (ReferenceError: window is not
-  // defined). Server and first client render both use "", so there's no
-  // hydration mismatch; the real origin applies right after hydration, before
-  // any OAuth button can be clicked.
-  const origin = useSyncExternalStore(
-    () => () => {},
-    () => window.location.origin,
-    () => "",
-  );
 
   return (
     <NeonAuthUIProvider
       authClient={authClient}
       account={{ fields: ["name"] }}
       basePath="/auth"
-      baseURL={origin}
+      // No baseURL: the vendor builds OAuth callbackURLs as
+      // `${baseURL}/dashboard`, and Neon's Managed Better Auth only honors a
+      // relative callbackURL — it appends the one-time
+      // `neon_auth_session_verifier` to it after OAuth so the client can
+      // exchange it for the session via /api/auth. An absolute origin here
+      // is ignored by the backend (users land on /auth/callback with no
+      // verifier and never get a session).
       credentials={{ forgotPassword: true }}
       defaultTheme="light"
       Link={Link}

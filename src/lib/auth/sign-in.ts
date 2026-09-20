@@ -125,3 +125,31 @@ export async function performEmailSignIn(
     throw mapSignInError(error);
   }
 }
+
+export interface SignInFieldErrors {
+  email?: string;
+  password?: string;
+}
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Client-side field validation, run before any network call. The form uses
+ * `noValidate` because the browser's native validation bubble often never
+ * renders in in-app webviews — the submit button then looks dead with no
+ * explanation. These messages render inline under the fields instead.
+ * Pure function, no PII in the returned strings.
+ */
+export function validateSignInFields(args: { email: string; password: string }): SignInFieldErrors {
+  const errors: SignInFieldErrors = {};
+  const email = args.email.trim();
+  if (!email) {
+    errors.email = "Enter your email address.";
+  } else if (!EMAIL_PATTERN.test(email)) {
+    errors.email = "Enter a valid email address.";
+  }
+  if (!args.password) {
+    errors.password = "Enter your password.";
+  }
+  return errors;
+}

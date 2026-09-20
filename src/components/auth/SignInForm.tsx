@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
 import { useToast } from "@/components/Toast";
-import { performEmailSignIn, SignInError } from "@/lib/auth/sign-in";
+import { performEmailSignIn, SignInError, validateSignInFields, type SignInFieldErrors } from "@/lib/auth/sign-in";
 
 /**
  * Custom sign-in form replacing the vendor AuthView for /auth/sign-in.
@@ -21,11 +21,18 @@ export function SignInForm() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<SignInFieldErrors>({});
   const { showToast } = useToast();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isLoading) return;
+    // Inline validation first: the form is `noValidate` because the browser's
+    // native validation bubble often never renders in in-app webviews, which
+    // made the submit button look dead on empty/malformed emails.
+    const validation = validateSignInFields({ email, password });
+    setFieldErrors(validation);
+    if (Object.keys(validation).length > 0) return;
     setError(null);
     setIsLoading(true);
     try {
@@ -52,13 +59,15 @@ export function SignInForm() {
     setError(null);
     setIsLoading(true);
     try {
-      // Absolute callback URL: Neon's Managed Better Auth requires the
-      // post-OAuth redirect to use a trusted domain in production. A bare
-      // "/dashboard" leaves the final redirect without an app origin, so the
-      // browser never lands back on the app's dashboard.
+      // Relative callbackURL: Neon's Managed Better Auth appends a one-time
+      // `neon_auth_session_verifier` to the callbackURL after OAuth, and the
+      // client exchanges it for the session via /api/auth. An absolute URL
+      // here is not honored by the managed backend (users land on
+      // /auth/callback with no verifier and no session), while the relative
+      // form matches Neon's documented pattern.
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: `${window.location.origin}/dashboard`,
+        callbackURL: "/dashboard",
       });
     } catch {
       const message = "Couldn't start Google sign-in. Please try again.";
@@ -73,7 +82,7 @@ export function SignInForm() {
       <h1 className="font-semibold text-lg md:text-xl text-heading">Sign In</h1>
       <p className="mt-1.5 text-sm text-muted">Enter your email below to login to your account</p>
 
-      <form onSubmit={handleSubmit} className="mt-6 grid gap-4">
+      <form onSubmit={handleSubmit} noValidate className="mt-6 grid gap-4">
         {error && (
           <div
             role="alert"
@@ -100,11 +109,19 @@ export function SignInForm() {
             onChange={(e) => {
               setEmail(e.target.value);
               if (error) setError(null);
+              if (fieldErrors.email) setFieldErrors((f) => ({ ...f, email: undefined }));
             }}
             className="form-input mt-1.5"
             placeholder="you@example.com"
             disabled={isLoading}
+            aria-invalid={!!fieldErrors.email}
+            aria-describedby={fieldErrors.email ? "signin-email-error" : undefined}
           />
+          {fieldErrors.email && (
+            <p id="signin-email-error" role="alert" className="mt-1 text-xs text-error">
+              {fieldErrors.email}
+            </p>
+          )}
         </div>
 
         <div>
@@ -129,11 +146,19 @@ export function SignInForm() {
             onChange={(e) => {
               setPassword(e.target.value);
               if (error) setError(null);
+              if (fieldErrors.password) setFieldErrors((f) => ({ ...f, password: undefined }));
             }}
             className="form-input mt-1.5"
             placeholder="••••••••"
             disabled={isLoading}
+            aria-invalid={!!fieldErrors.password}
+            aria-describedby={fieldErrors.password ? "signin-password-error" : undefined}
           />
+          {fieldErrors.password && (
+            <p id="signin-password-error" role="alert" className="mt-1 text-xs text-error">
+              {fieldErrors.password}
+            </p>
+          )}
         </div>
 
         <button type="submit" className="btn-primary w-full" disabled={isLoading}>

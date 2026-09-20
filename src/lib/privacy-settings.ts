@@ -3,6 +3,10 @@ export const PHOTO_HISTORY_KEY = "eras_photo_history_enabled";
 const ALLOWED_TELEMETRY_EVENTS = new Set([
   "face_landmarker_load",
   "image_classifier_load",
+  // OAuth callback lifecycle: name + status + duration only, never tokens,
+  // codes, emails, or any callback param values.
+  "oauth_callback_started",
+  "oauth_callback_timeout",
 ]);
 
 export function isPhotoHistoryEnabled(): boolean {
