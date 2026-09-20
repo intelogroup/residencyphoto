@@ -17,6 +17,25 @@ import { SupportModal } from "../_components/dashboard/SupportModal";
 export default function DashboardPage() {
   const router = useRouter();
   const session = authClient.useSession();
+  // Explicit verifier exchange: when Neon returns from OAuth directly to
+  // /dashboard with a one-time `neon_auth_session_verifier`, force the
+  // session exchange before the redirect guard below can bounce an
+  // existing user back to sign-in. The vendor's useSession() should pick
+  // this up automatically, but for returning users the exchange can race
+  // the redirect — this makes it deterministic.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has("neon_auth_session_verifier")) return;
+    // Trigger the exchange; refetch ensures the session state updates.
+    authClient.getSession().finally(() => {
+      session.refetch?.();
+      // Clean the verifier from the URL (one-time token).
+      params.delete("neon_auth_session_verifier");
+      const clean = params.toString();
+      window.history.replaceState(null, "", `/dashboard${clean ? `?${clean}` : ""}`);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const search = useSyncExternalStore(subscribeToDashboardSession, getDashboardSearchSnapshot, getDashboardServerSearchSnapshot);
   const [billingPlan, setBillingPlan] = useState<"Free" | "Resident" | "Program">("Free");
   const neonUser = mapNeonSessionToEraUser(session.data);

@@ -65,9 +65,15 @@ export function SignInForm() {
       // here is not honored by the managed backend (users land on
       // /auth/callback with no verifier and no session), while the relative
       // form matches Neon's documented pattern.
+      // errorCallbackURL/newUserCallbackURL: match the vendor AuthView's
+      // full parameter set. Without an explicit error callback, a failed
+      // account lookup for an existing user silently drops back to the
+      // sign-in page with no session.
       await authClient.signIn.social({
         provider: "google",
         callbackURL: "/dashboard",
+        errorCallbackURL: "/auth/sign-in",
+        newUserCallbackURL: "/dashboard",
       });
     } catch {
       const message = "Couldn't start Google sign-in. Please try again.";
