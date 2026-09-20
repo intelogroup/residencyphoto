@@ -15,12 +15,32 @@ import { performEmailSignIn, SignInError, validateSignInFields, type SignInField
  * - failures render a persistent, non-dismissing error banner (plus a
  *   supplemental toast), never a toast alone,
  * - the typed password is kept on failure so the user can retry or edit it.
+ * - OAuth errors returned via errorCallbackURL query params are surfaced in
+ *   the banner so silent redirects become visible.
  */
 export function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Surface OAuth errors: when Neon redirects to errorCallbackURL with
+  // ?error=..., show it instead of silently landing on the form. Read once
+  // via lazy initializer (not an effect) to avoid cascading renders.
+  const [error, setError] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    const params = new URLSearchParams(window.location.search);
+    const oauthError = params.get("error");
+    if (!oauthError) return null;
+    const errorDesc = params.get("error_description");
+    const msg = errorDesc
+      ? `Google sign-in failed: ${errorDesc} (${oauthError})`
+      : `Google sign-in failed (${oauthError}). Please try again.`;
+    // Clean the params so a refresh doesn't re-show the error.
+    params.delete("error");
+    params.delete("error_description");
+    const clean = params.toString();
+    window.history.replaceState(null, "", `/auth/sign-in${clean ? `?${clean}` : ""}`);
+    return msg;
+  });
   const [fieldErrors, setFieldErrors] = useState<SignInFieldErrors>({});
   const { showToast } = useToast();
 
