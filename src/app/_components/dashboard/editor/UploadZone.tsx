@@ -8,7 +8,7 @@ interface UploadZoneProps {
   onDrop: (event: React.DragEvent) => void;
 }
 
-const REQUIREMENTS = ["JPG, PNG, HEIC, or HEIF", "Portrait orientation", "Plain, light background"];
+const REQUIREMENTS = ["JPG or PNG", "Portrait orientation", "Plain, light background"];
 
 export function UploadZone({ onFileChange, onDrop }: UploadZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -33,7 +33,7 @@ export function UploadZone({ onFileChange, onDrop }: UploadZoneProps) {
           onClick={() => inputRef.current?.click()}
           className="group mt-6 flex min-h-[310px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50/70 px-6 py-10 text-center transition-[border-color,background-color,box-shadow] duration-150 hover:border-primary hover:bg-primary/5 focus-within:border-primary focus-within:bg-primary/5 focus-within:ring-4 focus-within:ring-primary/10"
         >
-          <input ref={inputRef} type="file" id="file-upload" name="photo" accept="image/jpeg,image/png,image/heic,image/heif" className="sr-only" onChange={onFileChange} aria-describedby="file-upload-help" />
+          <input ref={inputRef} type="file" id="file-upload" name="photo" accept="image/jpeg,image/png" className="sr-only" onChange={onFileChange} aria-describedby="file-upload-help" />
           <div className="flex w-full flex-col items-center justify-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full border border-slate-200 bg-white text-primary shadow-sm transition-transform duration-150 group-hover:-translate-y-0.5"><Upload aria-hidden={true} className="h-6 w-6" /></div>
             <span className="mt-5 text-base font-semibold text-heading">Upload a Headshot</span>

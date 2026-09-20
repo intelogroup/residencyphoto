@@ -1,9 +1,9 @@
-import { AuthView } from "@neondatabase/auth-ui";
 import { authViewPaths } from "@neondatabase/auth-ui/server";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SignInForm } from "@/components/auth/SignInForm";
 import { OAuthCallbackHandler } from "@/components/auth/OAuthCallbackHandler";
+import { AuthPageClient } from "./AuthPageClient";
 
 export const dynamicParams = false;
 
@@ -44,13 +44,14 @@ export default async function AuthPage({ params }: { params: Promise<{ path: str
             callback handler: explicitly exchanges Neon's one-time session
             verifier for the app-domain session, with a timeout and a real
             error state instead of the vendor's infinite spinner. All other
-            auth views keep the vendor AuthView. */}
+            auth views keep the vendor AuthView, wrapped with a bounded
+            recovery timeout and a friendly ?error= banner. */}
         {path === "sign-in" ? (
           <SignInForm />
         ) : path === "callback" ? (
           <OAuthCallbackHandler />
         ) : (
-          <AuthView path={path} redirectTo="/dashboard" />
+          <AuthPageClient path={path} />
         )}
       </div>
     </main>

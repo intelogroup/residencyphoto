@@ -3,16 +3,20 @@ interface AuthorizePhotoDownloadOptions {
   openCheckout: () => void;
 }
 
+export type DownloadAuthorization =
+  | { allowed: true }
+  | { allowed: false; forbidden: true };
+
 export async function authorizePhotoDownload({
   request,
   openCheckout,
-}: AuthorizePhotoDownloadOptions): Promise<{ allowed: boolean }> {
+}: AuthorizePhotoDownloadOptions): Promise<DownloadAuthorization> {
   const response = await request();
   const entitlement = (await response.json()) as { error?: string };
 
   if (response.status === 403) {
     openCheckout();
-    return { allowed: false };
+    return { allowed: false, forbidden: true };
   }
 
   if (!response.ok) {

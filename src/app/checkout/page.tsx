@@ -2,11 +2,11 @@
 
 import { ArrowLeft, ArrowRight, Check, LockKeyhole, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import posthog from "posthog-js";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { getStripePlan, type StripePlanName } from "@/lib/stripe-plans";
 import { authClient } from "@/lib/auth/client";
+import { captureException, trackEvent } from "@/lib/analytics-client";
 
 const PLAN_DETAILS: Record<
   StripePlanName,
@@ -44,16 +44,21 @@ function CheckoutContent() {
   const selectedPlan = getStripePlan(params.get("plan"));
   const email = session.data?.user.email ?? null;
 
+  // Funnel: the checkout page was viewed for this plan.
+  useEffect(() => {
+    trackEvent("checkout_opened", {
+      action: "checkout_opened",
+      extra: { plan: selectedPlan?.name ?? "unknown" },
+    });
+    // Fire once per page view.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function startCheckout() {
     if (!selectedPlan || !email || loading) return;
 
     setLoading(true);
     setError("");
-    posthog.capture("checkout_started", {
-      plan: selectedPlan.name,
-      value: selectedPlan.amount / 100,
-      currency: selectedPlan.currency.toUpperCase(),
-    });
     try {
       const response = await fetch("/api/checkout/create-session", {
         method: "POST",
@@ -66,6 +71,16 @@ function CheckoutContent() {
         throw new Error(data.error ?? "We could not start checkout. Please try again.");
       }
 
+      // Funnel: the session was created and we're handing off to Stripe —
+      // this is the "started" moment (viewing the page is "opened").
+      trackEvent("checkout_started", {
+        action: "checkout_started",
+        extra: {
+          plan: selectedPlan.name,
+          value: selectedPlan.amount / 100,
+          currency: selectedPlan.currency.toUpperCase(),
+        },
+      });
       window.location.assign(data.url);
     } catch (checkoutError) {
       setError(
@@ -73,6 +88,7 @@ function CheckoutContent() {
           ? checkoutError.message
           : "We could not start checkout. Please try again.",
       );
+      captureException(checkoutError, { route: "/checkout", action: "checkout_create_session" });
       setLoading(false);
     }
   }

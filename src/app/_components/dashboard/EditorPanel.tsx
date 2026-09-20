@@ -16,10 +16,12 @@ import {
 import { addHistoryRecord } from "@/lib/eras-storage";
 import { savePhoto, updatePhotoEditState, getActivePhoto, purgeExpired, clearPhotos, type PhotoEditState } from "@/lib/photo-store";
 import { authorizePhotoDownload } from "@/lib/download-workflow";
+import { captureException, sanitizeErrorMessage, trackEvent } from "@/lib/analytics-client";
+import { HEIC_REJECTION_MESSAGE, isHeicFile } from "@/lib/file-validation";
 import { useEraDetectors } from "./editor/useEraDetectors";
 import { UploadZone } from "./editor/UploadZone";
 import { FilterControls, type Filters } from "./editor/FilterControls";
-import { SpecCard } from "./editor/SpecCard";
+import { SpecCard, type DownloadPhase } from "./editor/SpecCard";
 
 interface EditorPanelProps {
   user: { email: string; name: string; plan?: "Free" | "Resident" | "Program" };
@@ -62,13 +64,19 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
 
   // Export metadata
   const [exportKB, setExportKB] = useState<number | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+  // Every async stage of the download flow gets visible UI — never a silent
+  // stop. "authorizing" = /api/downloads/authorize in flight, "preparing" =
+  // compressing/exporting, "redirecting" = 403 routed to checkout.
+  const [downloadPhase, setDownloadPhase] = useState<DownloadPhase>(null);
   const [resolutionWarning, setResolutionWarning] = useState<string | null>(null);
   const [ratioWarning, setRatioWarning] = useState<string | null>(null);
   const [bgWarning, setBgWarning] = useState<string | null>(null);
   const [topEdgeWarning, setTopEdgeWarning] = useState<string | null>(null);
   const [sizeWarning, setSizeWarning] = useState<string | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  // Set when a selected file is rejected before it ever reaches the canvas
+  // (e.g. HEIC/HEIF, which browsers can't decode in <img>).
+  const [fileTypeError, setFileTypeError] = useState<string | null>(null);
 
   // Canvas ref
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -190,12 +198,23 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
       setUploadProgress(0);
       setOriginalInfo(null);
       setSizeWarning("Couldn't load this photo — try a different file.");
+      captureException(new Error("editor_image_load_failed"), {
+        route: "/dashboard",
+        action: "editor_image_load",
+      });
     };
     img.src = url;
   };
 
   // Load file
   const loadImage = (file: File) => {
+    // Reject HEIC/HEIF immediately on selection — browsers can't decode them
+    // in <img>/canvas, so loading one would only end in a dead editor.
+    if (isHeicFile(file)) {
+      setFileTypeError(HEIC_REJECTION_MESSAGE);
+      return;
+    }
+    setFileTypeError(null);
     if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
     const url = URL.createObjectURL(file);
     objectUrlRef.current = url;
@@ -410,6 +429,22 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
     setIsDragging(false);
   };
 
+  // Pointer Events unify mouse/touch/pen. On pointerdown we claim the
+  // gesture with setPointerCapture so the pointer keeps reporting moves even
+  // if it leaves the element — and with `touch-action: none` in CSS the
+  // browser won't hijack a touch-drag into a page scroll. Mouse behavior is
+  // unchanged: pointerdown/move/up carry the same clientX/clientY the old
+  // mouse handlers used.
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // setPointerCapture can throw in edge cases — dragging still works,
+      // it just won't track outside the element bounds.
+    }
+    handleStartDrag(e.clientX, e.clientY);
+  };
+
   const handleCanvasKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (!image) return;
     const step = e.shiftKey ? 10 : 4;
@@ -440,17 +475,28 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
 
   // Download with Smart Compression
   const handleDownload = async () => {
-    if (!canvasRef.current || !image) return;
-    setIsProcessing(true);
+    if (!canvasRef.current || !image || downloadPhase !== null) return;
+    const plan = user.plan ?? "Free";
+    trackEvent("download_clicked", { action: "download_clicked", extra: { plan, locked: plan === "Free" } });
+    setDownloadPhase("authorizing");
     setDownloadError(null);
     const canvas = canvasRef.current;
 
     try {
       const authorization = await authorizePhotoDownload({
         request: () => fetch("/api/downloads/authorize", { method: "POST" }),
-        openCheckout: () => router.push("/checkout?plan=Resident"),
+        openCheckout: () => {},
       });
-      if (!authorization.allowed) return;
+      if (!authorization.allowed) {
+        // 403: free plan needs the Resident upgrade. Keep the existing
+        // routing, but make the handoff visible instead of a silent stop.
+        trackEvent("download_forbidden", { action: "download_forbidden", extra: { plan } });
+        setDownloadPhase("redirecting");
+        router.push("/checkout?plan=Resident");
+        return;
+      }
+      trackEvent("download_authorized", { action: "download_authorized", extra: { plan } });
+      setDownloadPhase("preparing");
 
       await new Promise<void>((resolve) => window.setTimeout(resolve, 500));
       const estimateSize = (quality: number) => {
@@ -494,9 +540,16 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
         thumbnail: dataUrl,
       });
     } catch (error) {
-      setDownloadError(error instanceof Error ? error.message : "We could not authorize this download.");
+      const message = error instanceof Error ? error.message : "We could not authorize this download.";
+      setDownloadError(message);
+      trackEvent("download_failed", {
+        action: "download_failed",
+        extra: { plan, error: sanitizeErrorMessage(message) },
+      });
+      captureException(error, { route: "/dashboard", action: "download_authorize" });
     } finally {
-      setIsProcessing(false);
+      // Leave the "redirecting" phase up while checkout navigation happens.
+      setDownloadPhase((phase) => (phase === "redirecting" ? phase : null));
     }
   };
 
@@ -548,6 +601,11 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
       <div className="grid items-start gap-6 lg:grid-cols-12">
       {/* LEFT COLUMN: Workspace */}
       <div className="space-y-6 lg:col-span-8">
+        {fileTypeError && (
+          <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-700">
+            {fileTypeError}
+          </p>
+        )}
         {isUploading ? (
           <div aria-live="polite" className="border-2 border-dashed border-slate-300 rounded-lg p-12 bg-white flex flex-col items-center justify-center text-center min-h-[350px]">
             <span className="text-sm font-semibold text-heading mb-4">Uploading {fileName}…</span>
@@ -577,7 +635,7 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
                 <input
                   ref={uploadInputRef}
                   type="file"
-                  accept="image/jpeg,image/png,image/heic,image/heif"
+                  accept="image/jpeg,image/png"
                   className="sr-only"
                   tabIndex={-1}
                   onChange={handleFileChange}
@@ -630,17 +688,14 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
               <div aria-hidden="true" className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/60 to-transparent" />
               <div className="relative mb-4 flex items-center justify-center gap-2 text-xs font-medium text-muted"><Crop aria-hidden={true} className="h-3.5 w-3.5 text-primary" />Drag to reposition · Arrow keys for fine adjustment</div>
               <div
-                className="relative w-[min(375px,100%)] aspect-[5/7] overflow-hidden cursor-move shadow-2xl bg-white border border-slate-700/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+                className="relative w-[min(375px,100%)] aspect-[5/7] overflow-hidden cursor-move touch-none shadow-2xl bg-white border border-slate-700/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
                 role="application"
                 tabIndex={0}
                 aria-label="Photo crop canvas. Drag the photo or use arrow keys to reposition it."
-                onMouseDown={(e) => handleStartDrag(e.clientX, e.clientY)}
-                onMouseMove={(e) => handleDrag(e.clientX, e.clientY)}
-                onMouseUp={handleEndDrag}
-                onMouseLeave={handleEndDrag}
-                onTouchStart={(e) => handleStartDrag(e.touches[0].clientX, e.touches[0].clientY)}
-                onTouchMove={(e) => handleDrag(e.touches[0].clientX, e.touches[0].clientY)}
-                onTouchEnd={handleEndDrag}
+                onPointerDown={handlePointerDown}
+                onPointerMove={(e) => handleDrag(e.clientX, e.clientY)}
+                onPointerUp={handleEndDrag}
+                onPointerCancel={handleEndDrag}
                 onKeyDown={handleCanvasKeyDown}
               >
                 <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
@@ -689,14 +744,22 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
       {/* RIGHT COLUMN: Spec Card & Validation */}
       <div className="lg:col-span-4">
         {downloadError && (
-          <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            {downloadError}
-          </p>
+          <div role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3">
+            <p className="text-sm leading-6 text-red-700">{downloadError}</p>
+            <button
+              type="button"
+              onClick={() => void handleDownload()}
+              disabled={downloadPhase !== null}
+              className="mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-red-700 px-3.5 py-1.5 text-xs font-semibold text-white transition hover:bg-red-800 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Try again
+            </button>
+          </div>
         )}
         <SpecCard
           imageSrc={imageSrc}
           exportKB={exportKB}
-          isProcessing={isProcessing}
+          downloadPhase={downloadPhase}
           onDownload={handleDownload}
           downloadLocked={(user.plan ?? "Free") === "Free"}
           onReset={handleReset}

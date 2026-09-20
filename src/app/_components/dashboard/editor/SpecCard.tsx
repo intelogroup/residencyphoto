@@ -6,7 +6,8 @@ import { MAX_FILE_KB } from "@/lib/eras-checks";
 interface SpecCardProps {
   imageSrc: string | null;
   exportKB: number | null;
-  isProcessing: boolean;
+  /** Async stage of the download flow — drives the button's visible state. */
+  downloadPhase: DownloadPhase;
   onDownload: () => void | Promise<void>;
   downloadLocked: boolean;
   onReset: () => void;
@@ -29,8 +30,17 @@ interface SpecCardProps {
 
 const WARNING_ORDER = ["resolutionWarning", "ratioWarning", "faceWarning", "poseWarning", "framingWarning", "topEdgeWarning", "eyewearWarning", "bgWarning", "attireWarning"] as const;
 
+/** Async stage of the download flow — every stage gets visible UI. */
+export type DownloadPhase = "authorizing" | "preparing" | "redirecting" | null;
+
+const PHASE_LABEL: Record<Exclude<DownloadPhase, null>, string> = {
+  authorizing: "Checking your plan…",
+  preparing: "Preparing…",
+  redirecting: "Opening checkout…",
+};
+
 export function SpecCard(props: SpecCardProps) {
-  const { imageSrc, exportKB, isProcessing, onDownload, onReset, sizeWarning, downloadLocked, landmarkerWarning, classifierWarning } = props;
+  const { imageSrc, exportKB, downloadPhase, onDownload, onReset, sizeWarning, downloadLocked, landmarkerWarning, classifierWarning } = props;
   const warnings = WARNING_ORDER.map((key) => props[key]).filter(Boolean) as string[];
   const unavailableWarnings = [landmarkerWarning, classifierWarning].filter(Boolean) as string[];
   const hasAnyWarning = warnings.length > 0 || !!sizeWarning || unavailableWarnings.length > 0;
@@ -85,8 +95,8 @@ export function SpecCard(props: SpecCardProps) {
       )}
 
       <div className="space-y-2.5">
-        <button onClick={() => void onDownload()} disabled={!imageSrc || isProcessing} className="btn-primary w-full gap-2 px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-40">
-          {isProcessing ? <><span aria-hidden={true} className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />Preparing…</> : <><Download aria-hidden={true} className="h-4 w-4" />{downloadLocked ? "Unlock Download — $4" : "Download ERAS-Ready Photo"}</>}
+        <button onClick={() => void onDownload()} disabled={!imageSrc || downloadPhase !== null} aria-live="polite" className="btn-primary w-full gap-2 px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-40">
+          {downloadPhase !== null ? <><span aria-hidden={true} className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />{PHASE_LABEL[downloadPhase]}</> : <><Download aria-hidden={true} className="h-4 w-4" />{downloadLocked ? "Unlock Download — $4" : "Download ERAS-Ready Photo"}</>}
         </button>
         {imageSrc && downloadLocked && <p className="text-center text-xs leading-5 text-muted">Editing and readiness checks are free. Upgrade once to download.</p>}
         {imageSrc && <button onClick={onReset} className="btn-ghost w-full gap-2 px-4 py-2.5 text-sm"><RotateCcw aria-hidden={true} className="h-4 w-4" />Start With a New Photo</button>}
