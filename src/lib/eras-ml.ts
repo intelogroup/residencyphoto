@@ -85,20 +85,25 @@ export const getImageClassifier = () => {
 
 export type PhotoCategory = { categoryName: string; score: number };
 
-// Decision rules for the ImageNet-label classifier, measured against real
-// photos (8 headshots: 3 with sunglasses, 2 with clear prescription glasses,
-// 1 bare-eyed, 1 suit, 1 t-shirt):
+// Decision rules for the ImageNet-label classifier, calibrated against the
+// SHIPPED model bytes (EfficientNet-Lite0 int8) on real photos — the earlier
+// MobileNetV2 prototype numbers did NOT transfer, so these replace them:
 //
-// Eyewear — the two sunglasses classes ("sunglass", "sunglasses") scored
-// 0.88–0.98 combined on sunglasses photos and at most 0.08 on clear-glasses
-// photos, so a 0.20 combined-score bar separates them with wide margin.
-// Clear prescription glasses never came close, which is what we want —
-// ERAS only forbids eyewear that hides the eyes.
+// Eyewear — combined "sunglass" + "sunglasses" score, 18 photos:
+//   9 sunglasses:  0.152, 0.199, 0.234, 0.371, 0.523, 0.625, 0.785, 0.793, 0.812
+//   9 clear/bare:  0.000, 0.008, 0.016, 0.027, 0.031, 0.031, 0.043, 0.047, 0.215
+// The classes overlap (tinted lenses score low; one clear-glasses close-up
+// scored 0.215), so the bar favors recall — missing sunglasses is the failure
+// this check exists to prevent, and the warning is dismissible. 0.10 catches
+// all 9 sunglasses photos with margin on both sides; only the close-up
+// outlier false-positives.
 //
-// Attire (advisory) — the "jersey" class is ImageNet's t-shirt label. It
-// scored 0.11 on the t-shirt photo and at most 0.045 elsewhere, so 0.08
-// flags obvious casual wear without nagging about everything else.
-const SUNGLASSES_SCORE_THRESHOLD = 0.2;
+// Attire (advisory) — "jersey" is ImageNet's t-shirt label, 9 photos:
+//   7 t-shirts: 0.020–0.465; 2 suits: 0.000
+// Kept conservative (advisory, not a requirement): flags obvious casual wear
+// without nagging. A plain t-shirt at 0.043 slips through — accepted trade-off;
+// don't lower this without dress-shirt/blouse/scrubs negatives on hand.
+const SUNGLASSES_SCORE_THRESHOLD = 0.1;
 const CASUAL_ATTIRE_SCORE_THRESHOLD = 0.08;
 const TOP_CATEGORIES_CONSIDERED = 5;
 
