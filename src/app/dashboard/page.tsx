@@ -211,9 +211,9 @@ export default function DashboardPage() {
                 <span className="rounded-full bg-white/20 px-1 py-0.5 text-[10px] font-bold tabular-nums text-white ring-1 ring-white/30">$4</span>
               </Link>
             )}
-            {user.plan !== "Free" && user.plan && (
-              <span className="hidden rounded-md border border-primary/15 bg-primary/5 px-2 py-1 text-[11px] font-semibold leading-none text-primary-dark sm:inline-flex">
-                {user.plan}
+            {user.name && (
+              <span className="hidden max-w-[120px] truncate text-sm font-medium text-heading sm:inline-flex">
+                {user.name}
               </span>
             )}
             <button
