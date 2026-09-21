@@ -86,6 +86,10 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
   // Drag states
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  // Pointer-down location for tap detection — a tap (no real movement) on
+  // the crop canvas recenters the photo on the tapped point instead of
+  // doing nothing (taps with zero feedback were showing up as dead clicks).
+  const tapStartRef = useRef<{ x: number; y: number } | null>(null);
 
   const {
     faceWarning,
@@ -425,10 +429,6 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
     setPosition(clampPositionToCover(next, zoom, image.width, image.height));
   };
 
-  const handleEndDrag = () => {
-    setIsDragging(false);
-  };
-
   // Pointer Events unify mouse/touch/pen. On pointerdown we claim the
   // gesture with setPointerCapture so the pointer keeps reporting moves even
   // if it leaves the element — and with `touch-action: none` in CSS the
@@ -436,6 +436,7 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
   // unchanged: pointerdown/move/up carry the same clientX/clientY the old
   // mouse handlers used.
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    tapStartRef.current = { x: e.clientX, y: e.clientY };
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch {
@@ -443,6 +444,51 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
       // it just won't track outside the element bounds.
     }
     handleStartDrag(e.clientX, e.clientY);
+  };
+
+  // A tap (pointerdown → pointerup with barely any movement) recenters the
+  // crop on the tapped point. This is the exact inverse of the canvas draw
+  // transform (translate → scale → rotate about the frame center), so the
+  // tapped image point lands in the middle of the 375×525 frame, clamped to
+  // keep the photo covering the frame.
+  const handleTapToCenter = (e: React.PointerEvent<HTMLDivElement>) => {
+    const start = tapStartRef.current;
+    tapStartRef.current = null;
+    if (!start || !image) return;
+    if (Math.hypot(e.clientX - start.x, e.clientY - start.y) > 8) return; // a drag, not a tap
+    const rect = e.currentTarget.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+    // Tap point in canvas backing-store pixels (375×525)
+    const bx = ((e.clientX - rect.left) / rect.width) * 375;
+    const by = ((e.clientY - rect.top) / rect.height) * 525;
+    // Undo translate(187.5, 262.5) → scale(zoom) → rotate(rotation)
+    const rad = (rotation * Math.PI) / 180;
+    const cos = Math.cos(rad);
+    const sin = Math.sin(rad);
+    const px = (bx - 187.5) / zoom;
+    const py = (by - 262.5) / zoom;
+    const ux = px * cos + py * sin;
+    const uy = -px * sin + py * cos;
+    const ix = ux - position.x + image.width / 2;
+    const iy = uy - position.y + image.height / 2;
+    setPosition(
+      clampPositionToCover(
+        { x: image.width / 2 - ix, y: image.height / 2 - iy },
+        zoom,
+        image.width,
+        image.height
+      )
+    );
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    handleTapToCenter(e);
+    setIsDragging(false);
+  };
+
+  const handlePointerCancel = () => {
+    tapStartRef.current = null;
+    setIsDragging(false);
   };
 
   const handleCanvasKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -686,16 +732,16 @@ export function EditorPanel({ user, initialPhoto, onInitialPhotoConsumed }: Edit
             {/* Canvas Viewport Box */}
             <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-100 p-4 select-none sm:p-6">
               <div aria-hidden="true" className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/60 to-transparent" />
-              <div className="relative mb-4 flex items-center justify-center gap-2 text-xs font-medium text-muted"><Crop aria-hidden={true} className="h-3.5 w-3.5 text-primary" />Drag to reposition · Arrow keys for fine adjustment</div>
+              <div className="relative mb-4 flex items-center justify-center gap-2 text-xs font-medium text-muted"><Crop aria-hidden={true} className="h-3.5 w-3.5 text-primary" />Drag to reposition · Tap to center · Arrow keys for fine adjustment</div>
               <div
                 className="relative w-[min(375px,100%)] aspect-[5/7] overflow-hidden cursor-move touch-none shadow-2xl bg-white border border-slate-700/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
                 role="application"
                 tabIndex={0}
-                aria-label="Photo crop canvas. Drag the photo or use arrow keys to reposition it."
+                aria-label="Photo crop canvas. Drag to reposition, tap to center on a point, or use arrow keys for fine adjustment."
                 onPointerDown={handlePointerDown}
                 onPointerMove={(e) => handleDrag(e.clientX, e.clientY)}
-                onPointerUp={handleEndDrag}
-                onPointerCancel={handleEndDrag}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerCancel}
                 onKeyDown={handleCanvasKeyDown}
               >
                 <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
