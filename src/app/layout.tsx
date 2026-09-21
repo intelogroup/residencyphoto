@@ -6,6 +6,7 @@ import { ToastProvider } from "@/components/Toast";
 import { AuthProvider } from "@/components/AuthProvider";
 import { PostHogProvider } from "@/components/PostHogProvider";
 import { MetaPixel } from "@/components/MetaPixel";
+import { GoogleAdsTag } from "@/components/GoogleAdsTag";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const playfair = Playfair_Display({ weight: "400", subsets: ["latin"], variable: "--font-playfair" });
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </PostHogProvider>
         <Analytics />
         <MetaPixel />
+        <GoogleAdsTag />
       </body>
     </html>
   );

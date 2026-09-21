@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth/client";
-import type { StripePlanName } from "@/lib/stripe-plans";
+import { getStripePlan, type StripePlanName } from "@/lib/stripe-plans";
+import { trackGoogleAdsPurchase } from "@/components/GoogleAdsTag";
 
 type Status = "verifying" | "success" | "error";
 
@@ -15,6 +16,7 @@ function CheckoutSuccessContent() {
   const [status, setStatus] = useState<Status>("verifying");
   const [plan, setPlan] = useState<StripePlanName | null>(null);
   const [error, setError] = useState("");
+  const conversionFiredFor = useRef<string | null>(null);
 
   useEffect(() => {
     if (session.isPending) return;
@@ -51,6 +53,20 @@ function CheckoutSuccessContent() {
       active = false;
     };
   }, [params, session.data?.user, session.isPending]);
+
+  // Fire the Google Ads purchase conversion once per verified session.
+  useEffect(() => {
+    if (status !== "success" || !plan) return;
+    const sessionId = params.get("session_id");
+    if (!sessionId || conversionFiredFor.current === sessionId) return;
+    conversionFiredFor.current = sessionId;
+    const stripePlan = getStripePlan(plan);
+    trackGoogleAdsPurchase({
+      sessionId,
+      value: (stripePlan?.amount ?? 0) / 100,
+      currency: "USD",
+    });
+  }, [status, plan, params]);
 
   return (
     <main id="main-content" className="min-h-screen bg-bg bg-grid-medical flex items-center justify-center p-6">
