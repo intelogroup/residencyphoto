@@ -175,4 +175,20 @@ describe("photo classification rules", () => {
       ])
     ).toBe(false);
   });
+
+  it("tolerates categories with a missing name (MediaPipe may omit categoryName)", async () => {
+    const { detectSunglasses, detectCasualAttire } = await import("./eras-ml");
+
+    // Regression: an undefined categoryName used to throw
+    // "Cannot read properties of undefined (reading 'toLowerCase')".
+    const unnamed = [
+      { categoryName: undefined, score: 0.9 },
+      { categoryName: "sunglass", score: 0.2 },
+    ] as unknown as Parameters<typeof detectSunglasses>[0];
+
+    expect(() => detectSunglasses(unnamed)).not.toThrow();
+    expect(() => detectCasualAttire(unnamed)).not.toThrow();
+    expect(detectSunglasses(unnamed)).toBe(true);
+    expect(detectCasualAttire(unnamed)).toBe(false);
+  });
 });

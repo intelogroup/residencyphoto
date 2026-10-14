@@ -110,7 +110,7 @@ const TOP_CATEGORIES_CONSIDERED = 5;
 export function detectSunglasses(categories: PhotoCategory[]): boolean {
   const score = categories
     .slice(0, TOP_CATEGORIES_CONSIDERED)
-    .filter((category) => category.categoryName.toLowerCase().includes("sunglass"))
+    .filter((category) => (category.categoryName ?? "").toLowerCase().includes("sunglass"))
     .reduce((sum, category) => sum + category.score, 0);
   return score > SUNGLASSES_SCORE_THRESHOLD;
 }
@@ -120,7 +120,7 @@ export function detectCasualAttire(categories: PhotoCategory[]): boolean {
     .slice(0, TOP_CATEGORIES_CONSIDERED)
     .some(
       (category) =>
-        category.categoryName.toLowerCase() === "jersey" &&
+        (category.categoryName ?? "").toLowerCase() === "jersey" &&
         category.score > CASUAL_ATTIRE_SCORE_THRESHOLD
     );
 }
